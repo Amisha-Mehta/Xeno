@@ -5,6 +5,9 @@
   "description": "AI-native mini CRM for shopper engagement with a stubbed channel service.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "start:crm": "node crm-server.js",
+    "start:channel": "node channel-server.js",
+    "test": "node tests/run-tests.js"
   }
 }
