@@ -1,0 +1,10 @@
+{
+  "name": "xeno-mini-crm",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-native mini CRM for shopper engagement with a stubbed channel service.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

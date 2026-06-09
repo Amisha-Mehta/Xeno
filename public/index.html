@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Xeno Mini CRM</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">X</div>
+          <div>
+            <strong>Xeno Mini CRM</strong>
+            <span>Shopper engagement desk</span>
+          </div>
+        </div>
+        <nav>
+          <button class="nav-item active" data-view="command">Command Center</button>
+          <button class="nav-item" data-view="audience">Audience</button>
+          <button class="nav-item" data-view="campaigns">Campaigns</button>
+          <button class="nav-item" data-view="receipts">Receipt Loop</button>
+        </nav>
+        <div class="sidebar-note">
+          <span>Channel stub</span>
+          <strong>Async callbacks live</strong>
+          <small>Campaign sends create communications, the channel service simulates delivery, then posts receipts back into CRM state.</small>
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Loom & Lane</p>
+            <h1>AI-native shopper CRM</h1>
+          </div>
+          <div class="top-actions">
+            <button class="ghost" id="refreshBtn">Refresh</button>
+            <button class="primary" id="sendLatestBtn">Send latest draft</button>
+          </div>
+        </header>
+
+        <section class="view active" id="command">
+          <div class="metrics-grid" id="metricsGrid"></div>
+
+          <div class="workbench">
+            <section class="panel copilot">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">AI copilot</p>
+                  <h2>Describe the campaign goal</h2>
+                </div>
+                <span class="status-pill">Planner</span>
+              </div>
+              <textarea id="promptInput">Win back lapsed VIP shoppers with a premium WhatsApp offer before the weekend</textarea>
+              <div class="prompt-actions">
+                <button class="primary" id="draftBtn">Generate draft</button>
+                <button class="ghost" id="createCampaignBtn">Create campaign</button>
+              </div>
+              <div class="draft-output" id="draftOutput"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Live performance</p>
+                  <h2>Campaign radar</h2>
+                </div>
+              </div>
+              <div id="campaignRadar"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="audience">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Segments</p>
+              <h2>Shopper audiences</h2>
+            </div>
+          </div>
+          <div class="split">
+            <div class="panel">
+              <div id="segmentsList"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Customers</p>
+                  <h2>Data ingested</h2>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Shopper</th>
+                      <th>Channel</th>
+                      <th>Spend</th>
+                      <th>Last order</th>
+                    </tr>
+                  </thead>
+                  <tbody id="customersTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="campaigns">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Campaigns</p>
+              <h2>Communication performance</h2>
+            </div>
+          </div>
+          <div class="campaign-list" id="campaignList"></div>
+        </section>
+
+        <section class="view" id="receipts">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Callback stream</p>
+              <h2>Channel service receipts</h2>
+            </div>
+          </div>
+          <div class="split">
+            <div class="panel">
+              <div id="receiptStream"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Communications</p>
+                  <h2>Per-recipient state</h2>
+                </div>
+              </div>
+              <div id="communicationStream"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>
