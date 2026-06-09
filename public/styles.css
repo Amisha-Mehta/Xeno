@@ -530,6 +530,214 @@ tbody tr:hover {
   color: var(--moss);
 }
 
+/* ----------------------------------------------------------- */
+/* Toast notifications                                         */
+/* ----------------------------------------------------------- */
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  padding: 13px 18px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 14px;
+  box-shadow: 0 14px 30px rgba(33, 31, 24, 0.18);
+  animation: toastIn 280ms ease;
+  max-width: 380px;
+}
+
+.toast-info {
+  background: var(--charcoal);
+  color: #fbf7ed;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.toast-error {
+  background: #fef2f2;
+  color: var(--clay);
+  border: 1px solid rgba(163, 90, 71, 0.3);
+}
+
+.toast-warn {
+  background: #fefce8;
+  color: var(--ochre);
+  border: 1px solid rgba(195, 148, 43, 0.35);
+}
+
+.toast-out {
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity 260ms ease, transform 260ms ease;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ----------------------------------------------------------- */
+/* Spinner                                                     */
+/* ----------------------------------------------------------- */
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 500ms linear infinite;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ----------------------------------------------------------- */
+/* Empty states                                                */
+/* ----------------------------------------------------------- */
+
+.empty-state {
+  padding: 28px 18px;
+  text-align: center;
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.55);
+}
+
+/* ----------------------------------------------------------- */
+/* AI Chat panel                                               */
+/* ----------------------------------------------------------- */
+
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 190px);
+  min-height: 420px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 253, 248, 0.93);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.chat-msg {
+  max-width: 82%;
+  animation: toastIn 200ms ease;
+}
+
+.chat-msg.user {
+  align-self: flex-end;
+}
+
+.chat-msg.assistant {
+  align-self: flex-start;
+}
+
+.chat-msg-content {
+  padding: 13px 16px;
+  border-radius: 12px;
+  line-height: 1.55;
+  font-size: 14px;
+}
+
+.chat-msg.user .chat-msg-content {
+  background: linear-gradient(135deg, var(--moss), var(--moss-2));
+  color: #fffdf8;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-msg.assistant .chat-msg-content {
+  background: var(--panel-warm);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 4px;
+  color: var(--ink);
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 10px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--line);
+  background: var(--panel-warm);
+}
+
+.chat-input-row input {
+  flex: 1;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 14px;
+  background: #fffefa;
+  outline: none;
+}
+
+.chat-input-row input:focus {
+  border-color: var(--moss);
+  box-shadow: 0 0 0 3px rgba(49, 92, 73, 0.1);
+}
+
+/* ----------------------------------------------------------- */
+/* Attribution rows                                            */
+/* ----------------------------------------------------------- */
+
+.attribution-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.attribution-row:last-child {
+  border-bottom: 0;
+}
+
+.attribution-revenue {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--moss);
+}
+
+/* ----------------------------------------------------------- */
+/* Status colors                                               */
+/* ----------------------------------------------------------- */
+
+.status-sending {
+  color: var(--ochre);
+}
+
+/* ----------------------------------------------------------- */
+/* Responsive                                                  */
+/* ----------------------------------------------------------- */
+
 @media (max-width: 1040px) {
   .app-shell {
     grid-template-columns: 1fr;

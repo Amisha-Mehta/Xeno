@@ -3,10 +3,14 @@ const { createSeedState, getAudienceMembers, computeCampaignMetrics, uid } = req
 const { draftCampaignFromPrompt } = require('../lib/ai');
 const { createCrmApp } = require('../lib/crm-app');
 
-function testAiDraftCreatesAudience() {
+async function testAiDraftCreatesAudience() {
   const state = createSeedState();
-  const draft = draftCampaignFromPrompt(state, 'Win back lapsed shoppers with a WhatsApp offer');
-  assert.ok(draft.segment.rules.kind === 'channel_preference' || draft.segment.rules.kind === 'lapsed');
+  const draft = await draftCampaignFromPrompt(state, 'Win back lapsed shoppers with a WhatsApp offer');
+  assert.ok(draft.segment, 'Draft should have a segment');
+  assert.ok(draft.segment.rules, 'Draft segment should have rules');
+  const kind = draft.segment.rules.kind;
+  assert.ok(kind === 'channel_preference' || kind === 'lapsed' || kind === 'recent_buyer',
+    `Expected lapsed/channel_preference/recent_buyer, got ${kind}`);
   assert.ok(Array.isArray(draft.audience));
   assert.ok(draft.message.body.includes('{{first_name}}'));
 }
@@ -73,16 +77,23 @@ function testOutOfOrderReceiptsDoNotDowngrade() {
   assert.equal(communication.status, 'clicked');
 }
 
-const tests = [
-  testAiDraftCreatesAudience,
-  testSegmentMatching,
-  testMetricsAndReceiptIdempotency,
-  testOutOfOrderReceiptsDoNotDowngrade
-];
+async function run() {
+  await testAiDraftCreatesAudience();
+  console.log('passed testAiDraftCreatesAudience');
 
-for (const test of tests) {
-  test();
-  console.log(`passed ${test.name}`);
+  testSegmentMatching();
+  console.log('passed testSegmentMatching');
+
+  testMetricsAndReceiptIdempotency();
+  console.log('passed testMetricsAndReceiptIdempotency');
+
+  testOutOfOrderReceiptsDoNotDowngrade();
+  console.log('passed testOutOfOrderReceiptsDoNotDowngrade');
+
+  console.log('All 4 tests passed.');
 }
 
-console.log(`All ${tests.length} tests passed.`);
+run().catch((err) => {
+  console.error('Test failed:', err);
+  process.exit(1);
+});

@@ -89,6 +89,7 @@ Campaign metrics dashboard
 - `POST /api/customers`: ingest a customer.
 - `POST /api/orders`: ingest an order.
 - `POST /api/ai/draft`: generate an AI audience and campaign draft from a prompt.
+- `POST /api/ai/chat`: chat with the campaign strategist AI.
 - `POST /api/segments`: create a segment.
 - `POST /api/campaigns`: create a campaign.
 - `POST /api/campaigns/:id/send`: CRM send API.
@@ -130,7 +131,15 @@ For the take-home scope, JSON persistence keeps the project easy to run and revi
 
 The channel stub is separate over HTTP, but still local. At scale, it would be independently deployed and queue-backed.
 
-The AI planner is deterministic so the demo is reliable without requiring an API key. With more time, I would add an optional LLM provider for richer natural-language segment parsing and message variants.
+The AI planner works without an API key using a deterministic offline engine. If `OPENAI_API_KEY` is present, the app first tries an OpenAI-compatible chat completion call for richer campaign strategy and falls back safely to the offline engine if the request fails.
+
+Optional AI environment variables:
+
+```bash
+OPENAI_API_KEY=your_key
+OPENAI_BASE_URL=https://api.openai.com/v1
+LLM_MODEL=gpt-4o-mini
+```
 
 ## Tests
 

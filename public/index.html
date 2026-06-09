@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
+    <!-- Toast container -->
+    <div class="toast-container" id="toastContainer"></div>
+
     <div class="app-shell">
       <aside class="sidebar">
         <div class="brand">
@@ -18,6 +21,7 @@
         </div>
         <nav>
           <button class="nav-item active" data-view="command">Command Center</button>
+          <button class="nav-item" data-view="chat">AI Chat</button>
           <button class="nav-item" data-view="audience">Audience</button>
           <button class="nav-item" data-view="campaigns">Campaigns</button>
           <button class="nav-item" data-view="receipts">Receipt Loop</button>
@@ -41,6 +45,7 @@
           </div>
         </header>
 
+        <!-- Command Center -->
         <section class="view active" id="command">
           <div class="metrics-grid" id="metricsGrid"></div>
 
@@ -51,38 +56,73 @@
                   <p class="eyebrow">AI copilot</p>
                   <h2>Describe the campaign goal</h2>
                 </div>
-                <span class="status-pill">Planner</span>
+                <span class="status-pill" id="aiModeBadge">Planner</span>
               </div>
               <textarea id="promptInput">Win back lapsed VIP shoppers with a premium WhatsApp offer before the weekend</textarea>
               <div class="prompt-actions">
-                <button class="primary" id="draftBtn">Generate draft</button>
+                <button class="primary" id="draftBtn">
+                  <span id="draftBtnText">Generate draft</span>
+                  <span class="spinner hidden" id="draftSpinner"></span>
+                </button>
                 <button class="ghost" id="createCampaignBtn">Create campaign</button>
               </div>
               <div class="draft-output" id="draftOutput"></div>
+              <div class="draft-output-empty hidden" id="draftEmpty">
+                <p class="subtle">Describe a campaign goal above and click "Generate draft" to let the AI copilot suggest a segment, message, and send strategy.</p>
+              </div>
             </section>
 
             <section class="panel">
               <div class="panel-heading">
                 <div>
-                  <p class="eyebrow">Live performance</p>
-                  <h2>Campaign radar</h2>
+                  <p class="eyebrow">Attribution</p>
+                  <h2>Campaign-driven revenue</h2>
                 </div>
               </div>
-              <div id="campaignRadar"></div>
+              <div id="attributionPanel"></div>
             </section>
           </div>
         </section>
 
+        <!-- AI Chat -->
+        <section class="view" id="chat">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Chat-first AI</p>
+              <h2>Talk to your campaign strategist</h2>
+            </div>
+            <span class="status-pill" id="chatModeBadge">Offline</span>
+          </div>
+          <div class="chat-panel">
+            <div class="chat-messages" id="chatMessages">
+              <div class="chat-msg assistant">
+                <div class="chat-msg-content">
+                  Hey! I'm your AI campaign strategist. Describe what you want to achieve — for example: <em>"I want to re-engage customers who haven't bought in 3 months with a WhatsApp offer."</em> I'll help you pick the right audience, channel, and message.
+                </div>
+              </div>
+            </div>
+            <div class="chat-input-row">
+              <input type="text" id="chatInput" placeholder="Describe your campaign goal..." />
+              <button class="primary" id="chatSendBtn">Send</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Audience -->
         <section class="view" id="audience">
           <div class="section-heading">
             <div>
               <p class="eyebrow">Segments</p>
               <h2>Shopper audiences</h2>
             </div>
+            <button class="ghost" id="addSegmentBtn">+ New segment</button>
           </div>
           <div class="split">
             <div class="panel">
               <div id="segmentsList"></div>
+              <div class="empty-state hidden" id="segmentsEmpty">
+                <p class="subtle">No segments yet. Use the AI copilot to create one, or add manually.</p>
+              </div>
             </div>
             <div class="panel">
               <div class="panel-heading">
@@ -90,6 +130,7 @@
                   <p class="eyebrow">Customers</p>
                   <h2>Data ingested</h2>
                 </div>
+                <button class="ghost" id="addCustomerBtn">+ Add</button>
               </div>
               <div class="table-wrap">
                 <table>
@@ -104,10 +145,14 @@
                   <tbody id="customersTable"></tbody>
                 </table>
               </div>
+              <div class="empty-state hidden" id="customersEmpty">
+                <p class="subtle">No customers yet. Ingest customer data to get started.</p>
+              </div>
             </div>
           </div>
         </section>
 
+        <!-- Campaigns -->
         <section class="view" id="campaigns">
           <div class="section-heading">
             <div>
@@ -116,8 +161,12 @@
             </div>
           </div>
           <div class="campaign-list" id="campaignList"></div>
+          <div class="empty-state hidden" id="campaignsEmpty">
+            <p class="subtle">No campaigns yet. Create one from the Command Center.</p>
+          </div>
         </section>
 
+        <!-- Receipts -->
         <section class="view" id="receipts">
           <div class="section-heading">
             <div>
@@ -128,6 +177,9 @@
           <div class="split">
             <div class="panel">
               <div id="receiptStream"></div>
+              <div class="empty-state hidden" id="receiptsEmpty">
+                <p class="subtle">No receipts yet. Send a campaign to see the callback loop in action.</p>
+              </div>
             </div>
             <div class="panel">
               <div class="panel-heading">
@@ -137,6 +189,9 @@
                 </div>
               </div>
               <div id="communicationStream"></div>
+              <div class="empty-state hidden" id="communicationsEmpty">
+                <p class="subtle">No communications yet.</p>
+              </div>
             </div>
           </div>
         </section>
