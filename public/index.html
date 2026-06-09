@@ -3,195 +3,609 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Xeno Mini CRM</title>
+    <title>Xeno CRM | Command Center</title>
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
+    <!-- Toast notifications -->
     <div class="toast-container" id="toastContainer"></div>
 
     <div class="app-shell">
+      <!-- Left Sidebar -->
       <aside class="sidebar">
         <div class="brand">
           <div class="brand-mark">X</div>
-          <div>
-            <strong>Xeno Mini CRM</strong>
-            <span>Shopper engagement desk</span>
+          <div class="brand-text">
+            <h2>Xeno CRM</h2>
+            <span>Shopper Command Desk</span>
           </div>
         </div>
+
         <nav>
-          <button class="nav-item active" data-view="command">Command Center</button>
-          <button class="nav-item" data-view="chat">AI Chat</button>
-          <button class="nav-item" data-view="audience">Audience</button>
-          <button class="nav-item" data-view="campaigns">Campaigns</button>
-          <button class="nav-item" data-view="receipts">Receipt Loop</button>
+          <div class="nav-section-title">Operations</div>
+          <button class="nav-item active" data-view="command">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>
+            Dashboard
+          </button>
+          <button class="nav-item" data-view="customers">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            Customers
+          </button>
+          <button class="nav-item" data-view="segments">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path><path d="M2 12h20"></path></svg>
+            Segments
+          </button>
+          <button class="nav-item" data-view="campaigns">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"></path></svg>
+            Campaigns
+          </button>
+
+          <div class="nav-section-title">Intelligence</div>
+          <button class="nav-item" data-view="chat">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            AI Copilot
+          </button>
+          <button class="nav-item" data-view="receipts">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+            Analytics & Logs
+          </button>
+
+          <div class="nav-section-title">System</div>
+          <button class="nav-item" data-view="settings">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            Settings
+          </button>
         </nav>
+
         <div class="sidebar-note">
-          <span>Channel stub</span>
-          <strong>Async callbacks live</strong>
-          <small>Campaign sends create communications, the channel service simulates delivery, then posts receipts back into CRM state.</small>
+          <strong>
+            <span class="status-dot"></span>
+            Receipt Loop Active
+          </strong>
+          <p>Mock channel service is listening on port 3001 for automated customer responses.</p>
         </div>
       </aside>
 
-      <main>
+      <!-- Main Shell Area -->
+      <div class="main-wrapper">
+        <!-- Top Nav Bar -->
         <header class="topbar">
-          <div>
-            <p class="eyebrow">Loom & Lane</p>
-            <h1>AI-native shopper CRM</h1>
+          <div class="topbar-left">
+            <div class="workspace-select">
+              <span class="workspace-dot"></span>
+              Loom & Lane (Prod)
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg>
+            </div>
+            <div class="global-search">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
+              <input type="text" placeholder="Search customer, segment, campaign..." disabled>
+            </div>
           </div>
-          <div class="top-actions">
-            <button class="ghost" id="refreshBtn">Refresh</button>
-            <button class="primary" id="sendLatestBtn">Send latest draft</button>
+
+          <div class="topbar-right">
+            <div class="topbar-actions">
+              <button class="btn btn-secondary" id="refreshBtn">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                Sync Data
+              </button>
+              <button class="btn btn-primary" id="sendLatestBtn">
+                Launch Latest Draft
+              </button>
+            </div>
+            <div class="notification-bell">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+              <div class="notification-badge"></div>
+            </div>
+            <div class="user-profile">
+              <div class="user-avatar">AM</div>
+              <div class="user-info">
+                <strong>Amisha Mehta</strong>
+                <span>Marketing Lead</span>
+              </div>
+            </div>
           </div>
         </header>
 
-        <section class="view active" id="command">
-          <div class="metrics-grid" id="metricsGrid"></div>
-
-          <div class="workbench">
-            <section class="panel copilot">
-              <div class="panel-heading">
-                <div>
-                  <p class="eyebrow">AI copilot</p>
-                  <h2>Describe the campaign goal</h2>
-                </div>
-                <span class="status-pill" id="aiModeBadge">Planner</span>
+        <!-- Main Content Body -->
+        <main>
+          
+          <!-- View 1: Dashboard (#command) -->
+          <section class="view active" id="command">
+            <div class="page-header">
+              <div>
+                <h1>Executive Dashboard</h1>
+                <p>Real-time campaign performance & customer attribution metrics.</p>
               </div>
-              <textarea id="promptInput">Win back lapsed VIP shoppers with a premium WhatsApp offer before the weekend</textarea>
-              <div class="prompt-actions">
-                <button class="primary" id="draftBtn">
-                  <span id="draftBtnText">Generate draft</span>
-                  <span class="spinner hidden" id="draftSpinner"></span>
-                </button>
-                <button class="ghost" id="createCampaignBtn">Create campaign</button>
-                <button class="ghost" id="scheduleCampaignBtn">Schedule in 30s</button>
-              </div>
-              <div class="draft-output" id="draftOutput"></div>
-              <div class="draft-output-empty hidden" id="draftEmpty">
-                <p class="subtle">Describe a campaign goal above and generate a draft to let the AI copilot suggest a segment, message, and send strategy.</p>
-              </div>
-            </section>
-
-            <section class="panel">
-              <div class="panel-heading">
-                <div>
-                  <p class="eyebrow">Attribution</p>
-                  <h2>Campaign-driven revenue</h2>
-                </div>
-              </div>
-              <div id="attributionPanel"></div>
-            </section>
-          </div>
-        </section>
-
-        <section class="view" id="chat">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">Chat-first AI</p>
-              <h2>Talk to your campaign strategist</h2>
             </div>
-            <span class="status-pill" id="chatModeBadge">Offline</span>
-          </div>
-          <div class="chat-panel">
-            <div class="chat-messages" id="chatMessages">
-              <div class="chat-msg assistant">
-                <div class="chat-msg-content">
-                  Hey! I am your AI campaign strategist. Describe what you want to achieve, for example: <em>"I want to re-engage customers who have not bought in 3 months with a WhatsApp offer."</em> I will help you pick the right audience, channel, and message.
+
+            <!-- Dashboard Stats Grid (Dynamically updated) -->
+            <div class="metrics-grid" id="metricsGrid">
+              <!-- Placeholder cards updated by app.js -->
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-title">Total Customers</span>
+                </div>
+                <div class="metric-value-row">
+                  <span class="metric-value">-</span>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-title">Revenue Tracked</span>
+                </div>
+                <div class="metric-value-row">
+                  <span class="metric-value">-</span>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-title">Delivery Rate</span>
+                </div>
+                <div class="metric-value-row">
+                  <span class="metric-value">-</span>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-title">Click-Through Rate</span>
+                </div>
+                <div class="metric-value-row">
+                  <span class="metric-value">-</span>
                 </div>
               </div>
             </div>
-            <div class="chat-input-row">
-              <input type="text" id="chatInput" placeholder="Describe your campaign goal..." />
-              <button class="primary" id="chatSendBtn">Send</button>
-            </div>
-          </div>
-        </section>
 
-        <section class="view" id="audience">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">Segments</p>
-              <h2>Shopper audiences</h2>
+            <!-- Split Panel: AI Campaign Planner & Revenue Attribution -->
+            <div class="workbench">
+              <div class="panel copilot">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <h3>AI Campaign Draft Planner</h3>
+                    <p>Describe your target audience and message goal to generate an AI campaign draft.</p>
+                  </div>
+                  <span class="status-pill primary" id="aiModeBadge">Offline Mode</span>
+                </div>
+
+                <div class="copilot-section">
+                  <div class="prompt-area-wrapper">
+                    <textarea id="promptInput">Win back lapsed VIP shoppers with a premium WhatsApp offer before the weekend</textarea>
+                  </div>
+                  <div class="prompt-actions">
+                    <div class="action-buttons">
+                      <button class="btn btn-primary" id="draftBtn">
+                        <span id="draftBtnText">Generate Campaign Draft</span>
+                        <span class="spinner hidden" id="draftSpinner"></span>
+                      </button>
+                      <button class="btn btn-secondary" id="createCampaignBtn">Save Campaign</button>
+                      <button class="btn btn-secondary" id="scheduleCampaignBtn">Schedule in 30s</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Generated Draft Display Area -->
+                <div class="draft-output" id="draftOutput"></div>
+                <div class="empty-state" id="draftEmpty">
+                  <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                  <p>Submit a prompt above to compile a custom AI segment, message payload, and schedule recommendation.</p>
+                </div>
+              </div>
+
+              <!-- Revenue Attribution Card -->
+              <div class="panel">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <h3>Revenue Attribution</h3>
+                    <p>Recent campaigns driving purchase conversions.</p>
+                  </div>
+                </div>
+                <div class="attribution-list" id="attributionPanel">
+                  <!-- Injected by app.js -->
+                </div>
+              </div>
             </div>
-            <button class="ghost" id="addSegmentBtn">+ New segment</button>
-          </div>
-          <div class="split">
+            
+            <!-- Dashboard Charts Row -->
+            <div class="workbench" style="margin-top: 24px;">
+              <!-- Funnel Chart Card -->
+              <div class="panel">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <h3>Global Lifecycle Conversions</h3>
+                    <p>Funnel conversion efficiency from send to attribute purchase.</p>
+                  </div>
+                </div>
+                <!-- Custom SVG Funnel -->
+                <div style="height: 180px; display: flex; align-items: center; justify-content: center;" id="dashboardFunnelContainer">
+                  <!-- Injected by app.js -->
+                </div>
+              </div>
+
+              <!-- Segment Distribution Card -->
+              <div class="panel">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <h3>Recent Campaign Radar</h3>
+                    <p>Real-time delivery progress of the latest 3 campaigns.</p>
+                  </div>
+                </div>
+                <div id="campaignRadar">
+                  <!-- Injected by app.js -->
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View 2: Customers (#customers) -->
+          <section class="view" id="customers">
+            <div class="page-header">
+              <div>
+                <h1>Ingested Customers</h1>
+                <p>Shoppers synchronized with CRM profiles and order attributes.</p>
+              </div>
+              <button class="btn btn-primary" id="addCustomerBtn">+ Add Customer</button>
+            </div>
+
+            <!-- Ingested Customers Table -->
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Shopper Details</th>
+                    <th>Engagement Channel</th>
+                    <th>Monetary Metrics</th>
+                    <th>Last Order Activity</th>
+                  </tr>
+                </thead>
+                <tbody id="customersTable">
+                  <!-- Injected by app.js -->
+                </tbody>
+              </table>
+            </div>
+            <div class="empty-state hidden" id="customersEmpty">
+              <p>No customer records found. Please ingest shopper logs.</p>
+            </div>
+          </section>
+
+          <!-- View 3: Segments (#segments) -->
+          <section class="view" id="segments">
+            <div class="page-header">
+              <div>
+                <h1>Shopper Segment Rules</h1>
+                <p>Target customer lists grouped by attributes and behavior rules.</p>
+              </div>
+              <button class="btn btn-primary" id="addSegmentBtn">+ New Segment</button>
+            </div>
+
+            <div class="split-view-audience">
+              <!-- Visual Rule Builder Mockup -->
+              <div class="panel">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <h3>Visual Segment Builder</h3>
+                    <p>Filter criteria for campaign targeting.</p>
+                  </div>
+                </div>
+                
+                <div class="rule-builder-panel">
+                  <div class="rule-group">
+                    <div class="rule-group-header">
+                      <strong style="font-size: 12px; color: var(--ink-soft)">Filter criteria group 1</strong>
+                      <span class="status-pill success">MATCH ALL</span>
+                    </div>
+                    <div class="rule-row">
+                      <span class="rule-chip">Attributes.loyaltyTier</span>
+                      <span class="rule-operator">equals</span>
+                      <strong style="font-size: 12px;">Gold</strong>
+                    </div>
+                    <div class="rule-row">
+                      <span class="rule-chip">Metrics.orderCount</span>
+                      <span class="rule-operator">>=</span>
+                      <strong style="font-size: 12px;">2 orders</strong>
+                    </div>
+                  </div>
+                  
+                  <div class="rule-group">
+                    <div class="rule-group-header">
+                      <strong style="font-size: 12px; color: var(--ink-soft)">Filter criteria group 2</strong>
+                      <span class="status-pill warning">MATCH ANY</span>
+                    </div>
+                    <div class="rule-row">
+                      <span class="rule-chip">PreferredChannel</span>
+                      <span class="rule-operator">contains</span>
+                      <strong style="font-size: 12px;">WhatsApp, Email</strong>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style="font-size: 12px; color: var(--muted); text-align: center;">
+                  AI drafts will automatically create and compile these rule structures based on prompt text.
+                </div>
+              </div>
+
+              <!-- Segments List -->
+              <div class="panel">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <h3>Active Segments</h3>
+                    <p>Available target audiences with live shopper counts.</p>
+                  </div>
+                </div>
+                <div id="segmentsList">
+                  <!-- Injected by app.js -->
+                </div>
+                <div class="empty-state hidden" id="segmentsEmpty">
+                  <p>No segments found. Use the AI Planner to target shoppers.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View 4: Campaigns (#campaigns) -->
+          <section class="view" id="campaigns">
+            <div class="page-header">
+              <div>
+                <h1>Campaign Control Hub</h1>
+                <p>Design, preview, and review multi-channel marketing campaigns.</p>
+              </div>
+            </div>
+
+            <!-- Split Panel: Campaign Wizard + Device Live Preview -->
+            <div class="campaign-wizard" style="margin-bottom: 28px;">
+              <div class="panel">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <h3>Interactive Redesign Wizard</h3>
+                    <p>Review draft details and simulate message renders.</p>
+                  </div>
+                </div>
+
+                <div class="wizard-steps">
+                  <div class="wizard-step completed">
+                    <div class="step-indicator">1</div>
+                    <div class="step-label">Audience</div>
+                  </div>
+                  <div class="wizard-step completed">
+                    <div class="step-indicator">2</div>
+                    <div class="step-label">Channel</div>
+                  </div>
+                  <div class="wizard-step active">
+                    <div class="step-indicator">3</div>
+                    <div class="step-label">Preview</div>
+                  </div>
+                  <div class="wizard-step">
+                    <div class="step-indicator">4</div>
+                    <div class="step-label">Send</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
+                  <div style="background: var(--primary-light); padding: 16px; border-radius: var(--radius); border: 1px solid rgba(79, 70, 229, 0.1)">
+                    <strong style="color: var(--primary); display: block; font-size: 13px; margin-bottom: 4px;">Dynamic Content Attribution</strong>
+                    <span style="font-size: 12px; color: var(--ink-soft)">Use `{{first_name}}` inside message templates to dynamically personalize receipts.</span>
+                  </div>
+                  <p style="font-size: 13px; color: var(--muted); line-height: 1.5">
+                    Select the active draft in the Dashboard to reload preview elements. You can send campaigns directly below or schedule automated delay runs.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Phone Mockup Preview Card -->
+              <div class="panel" style="display: flex; justify-content: center; padding: 24px;">
+                <div class="mobile-mockup-wrapper">
+                  <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--muted)">Mockup Preview Render</span>
+                  <!-- Phone Mockup -->
+                  <div class="phone-mockup whatsapp" id="phonePreviewFrame">
+                    <div class="phone-header">
+                      <span class="phone-header-title" id="phoneHeaderLabel">WhatsApp Business</span>
+                      <span>10:42 AM</span>
+                    </div>
+                    <div class="phone-screen">
+                      <div class="phone-bubble" id="phonePreviewMessage">
+                        Select a campaign draft to view the render message here.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Campaign list container -->
             <div class="panel">
-              <div id="segmentsList"></div>
-              <div class="empty-state hidden" id="segmentsEmpty">
-                <p class="subtle">No segments yet. Use the AI copilot to create one, or add manually.</p>
-              </div>
-            </div>
-            <div class="panel">
-              <div class="panel-heading">
-                <div>
-                  <p class="eyebrow">Customers</p>
-                  <h2>Data ingested</h2>
-                </div>
-                <button class="ghost" id="addCustomerBtn">+ Add</button>
-              </div>
-              <div class="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Shopper</th>
-                      <th>Channel</th>
-                      <th>Spend</th>
-                      <th>Last order</th>
-                    </tr>
-                  </thead>
-                  <tbody id="customersTable"></tbody>
-                </table>
-              </div>
-              <div class="empty-state hidden" id="customersEmpty">
-                <p class="subtle">No customers yet. Ingest customer data to get started.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="view" id="campaigns">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">Campaigns</p>
-              <h2>Communication performance</h2>
-            </div>
-          </div>
-          <div class="campaign-list" id="campaignList"></div>
-          <div class="empty-state hidden" id="campaignsEmpty">
-            <p class="subtle">No campaigns yet. Create one from the Command Center.</p>
-          </div>
-        </section>
-
-        <section class="view" id="receipts">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">Callback stream</p>
-              <h2>Channel service receipts</h2>
-            </div>
-          </div>
-          <div class="split">
-            <div class="panel">
-              <div id="receiptStream"></div>
-              <div class="empty-state hidden" id="receiptsEmpty">
-                <p class="subtle">No receipts yet. Send or schedule a campaign to see the callback loop in action.</p>
-              </div>
-            </div>
-            <div class="panel">
-              <div class="panel-heading">
-                <div>
-                  <p class="eyebrow">Communications</p>
-                  <h2>Per-recipient state</h2>
+              <div class="panel-header">
+                <div class="panel-title">
+                  <h3>All Campaigns</h3>
+                  <p>Detailed performance logs across SMS, WhatsApp, Email, and RCS.</p>
                 </div>
               </div>
-              <div id="communicationStream"></div>
-              <div class="empty-state hidden" id="communicationsEmpty">
-                <p class="subtle">No communications yet.</p>
+              <div class="campaign-list" id="campaignList">
+                <!-- Injected by app.js -->
+              </div>
+              <div class="empty-state hidden" id="campaignsEmpty">
+                <p>No campaigns found. Generate a draft in the Dashboard first.</p>
               </div>
             </div>
-          </div>
-        </section>
-      </main>
+          </section>
+
+          <!-- View 5: Analytics & Receipts (#receipts) -->
+          <section class="view" id="receipts">
+            <div class="page-header">
+              <div>
+                <h1>Receipt loop & Callback Stream</h1>
+                <p>Inspect incoming event receipts and trace per-recipient delivery states.</p>
+              </div>
+            </div>
+
+            <!-- Analytical Funnel Detail -->
+            <div class="analytics-funnel-card">
+              <div class="funnel-stage">
+                <span class="funnel-label">Sent</span>
+                <span class="funnel-value" id="funnelSentVal">-</span>
+                <span class="funnel-pct">100%</span>
+              </div>
+              <div class="funnel-stage">
+                <span class="funnel-label">Delivered</span>
+                <span class="funnel-value" id="funnelDeliveredVal">-</span>
+                <span class="funnel-pct" id="funnelDeliveredPct">-</span>
+              </div>
+              <div class="funnel-stage">
+                <span class="funnel-label">Opened</span>
+                <span class="funnel-value" id="funnelOpenedVal">-</span>
+                <span class="funnel-pct" id="funnelOpenedPct">-</span>
+              </div>
+              <div class="funnel-stage">
+                <span class="funnel-label">Clicked</span>
+                <span class="funnel-value" id="funnelClickedVal">-</span>
+                <span class="funnel-pct" id="funnelClickedPct">-</span>
+              </div>
+              <div class="funnel-stage">
+                <span class="funnel-label">Attributed Spend</span>
+                <span class="funnel-value" id="funnelSpendVal">-</span>
+                <span class="funnel-pct" id="funnelSpendPct">-</span>
+              </div>
+            </div>
+
+            <div class="split-view">
+              <!-- Callback logs -->
+              <div class="panel">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <h3>Callback Event logs</h3>
+                    <p>Live stream of incoming delivery receipts from the channel server.</p>
+                  </div>
+                </div>
+                <div id="receiptStream">
+                  <!-- Injected by app.js -->
+                </div>
+                <div class="empty-state hidden" id="receiptsEmpty">
+                  <p>No receipt logs registered.</p>
+                </div>
+              </div>
+
+              <!-- Per-recipient state -->
+              <div class="panel">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <h3>Recipient State Index</h3>
+                    <p>Unified delivery status table across all user communications.</p>
+                  </div>
+                </div>
+                <div id="communicationStream">
+                  <!-- Injected by app.js -->
+                </div>
+                <div class="empty-state hidden" id="communicationsEmpty">
+                  <p>No receipt communication logs registered.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View 6: Settings (#settings) -->
+          <section class="view" id="settings">
+            <div class="page-header">
+              <div>
+                <h1>System Administration Settings</h1>
+                <p>Manage demo databases, clear persistent logs, and view developer variables.</p>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <div class="settings-card">
+                <div class="settings-card-title">Demo Operations</div>
+                <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">
+                  Reset the CRM local state file (`data/crm-state.json`) to clear custom segments, orders, and campaigns, and re-inject default sample values.
+                </p>
+                <div>
+                  <button class="btn btn-danger" id="resetDemoBtn">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16"></path></svg>
+                    Reset & Seed CRM State
+                  </button>
+                </div>
+              </div>
+
+              <div class="settings-card">
+                <div class="settings-card-title">System Variables & Status</div>
+                <div class="table-wrap">
+                  <table>
+                    <tbody>
+                      <tr>
+                        <td><strong>CRM Port</strong></td>
+                        <td>3000</td>
+                        <td><span class="status-pill success">Active</span></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Channel Stub Service Port</strong></td>
+                        <td>3001</td>
+                        <td><span class="status-pill success">Active</span></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Persistence File</strong></td>
+                        <td><code>data/crm-state.json</code></td>
+                        <td><span class="status-pill info">JSON Storage</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View 7: AI Copilot (#chat) -->
+          <section class="view" id="chat">
+            <div class="page-header">
+              <div>
+                <h1>AI Copilot strategist</h1>
+                <p>Interactive campaign assistant powered by Natural Language inputs.</p>
+              </div>
+            </div>
+
+            <div class="chat-panel">
+              <!-- Conversational History -->
+              <div class="chat-conversation">
+                <div class="chat-header">
+                  <div class="chat-header-title">
+                    <h3>Strategizer Channel</h3>
+                  </div>
+                  <span class="status-pill primary" id="chatModeBadge">Offline Mode</span>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                  <!-- Injected by app.js -->
+                </div>
+                <div class="chat-input-bar">
+                  <input type="text" id="chatInput" placeholder="Ask details: 'Analyze campaigns' or 'Draft a discount SMS for Mumbai'...">
+                  <button class="btn btn-primary" id="chatSendBtn">Send prompt</button>
+                </div>
+              </div>
+
+              <!-- Suggested Prompts Sidebar -->
+              <div class="chat-suggestions-sidebar">
+                <div class="suggestion-section-title">Suggested Prompts</div>
+                
+                <div class="suggestion-card" onclick="document.getElementById('chatInput').value = 'Re-engage VIPs who bought in the last 45 days with a premium WhatsApp coupon';">
+                  <strong>Re-engage VIPs</strong>
+                  <p>"Re-engage VIPs who bought in the last 45 days with a premium WhatsApp coupon"</p>
+                </div>
+                
+                <div class="suggestion-card" onclick="document.getElementById('chatInput').value = 'Identify shoppers in Bengaluru who prefer RCS and draft a summer coffee promo';">
+                  <strong>RCS Beverage Segment</strong>
+                  <p>"Identify shoppers in Bengaluru who prefer RCS and draft a summer coffee promo"</p>
+                </div>
+
+                <div class="suggestion-card" onclick="document.getElementById('chatInput').value = 'Suggest a winback campaign for Delhi customers who haven\'t purchased in 30 days';">
+                  <strong>Winback Campaign</strong>
+                  <p>"Suggest a winback campaign for Delhi customers who haven't purchased in 30 days"</p>
+                </div>
+
+                <div style="font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 12px; margin-top: 10px;">
+                  Click any card to pre-fill the query bar and chat.
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </main>
+      </div>
     </div>
+
     <script src="/app.js"></script>
   </body>
 </html>
