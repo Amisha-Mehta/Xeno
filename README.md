@@ -93,6 +93,7 @@ Campaign metrics dashboard
 - `POST /api/segments`: create a segment.
 - `POST /api/campaigns`: create a campaign.
 - `POST /api/campaigns/:id/send`: CRM send API.
+- `POST /api/campaigns/:id/schedule`: schedule a draft campaign; the CRM sends it later through the same channel-service loop.
 - `POST /api/receipts`: CRM receipt callback API.
 - `POST /api/admin/reset`: reset demo data.
 - `GET http://localhost:3001/health`: channel service health check.
@@ -123,6 +124,10 @@ Campaign metrics dashboard
 - Added idempotent receipt handling.
 - Added status ranking so older events do not downgrade communication state.
 - Added focused tests for AI draft, segmentation, metrics, idempotency, and out-of-order receipts.
+- Added campaign scheduling with persisted scheduled state and timer rehydration on startup.
+- Added richer segmentation with `all`/`any` combinators, spend, city, lifecycle, loyalty tier, category, and channel filters.
+- Added AI chat mode plus optional LLM-backed campaign drafting.
+- Added campaign attribution panel for campaign-driven revenue.
 - Polished the UI to feel more elegant, professional, and demo-ready.
 
 ## System design tradeoffs
@@ -147,15 +152,54 @@ LLM_MODEL=gpt-4o-mini
 npm test
 ```
 
+Current coverage checks AI draft generation, segment matching, campaign metrics, receipt idempotency, out-of-order receipts, compound segmentation, and scheduling.
+
 ## Demo flow
 
 1. Open `http://localhost:3000`.
 2. Generate an AI draft from the default prompt.
 3. Create the campaign.
-4. Send the latest draft.
+4. Either send immediately or schedule it for 30 seconds.
 5. Open the Receipt Loop tab and watch callbacks update recipient state.
 6. Open Campaigns and review sent, delivered, opened, read, clicked, failed, and attributed revenue.
+7. Open AI Chat and ask for campaign strategy in natural language.
 
 ## Deployment note
 
 Render, Railway, or Fly.io are good fits for this project. For the simplest hosted demo, deploy `npm start` and expose the CRM port. For a more production-like deployment, run the CRM and channel service as separate processes with `CHANNEL_URL` and `CRM_URL` environment variables.
+
+Suggested Render setup:
+
+- Build command: `npm install`
+- Start command: `npm start`
+- Environment variables, optional: `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `LLM_MODEL`
+- Expose web service port from `PORT`
+- Keep `CHANNEL_PORT` set to `3001` for the local channel stub inside the same service
+
+## Submission checklist
+
+- Working product: complete locally; deploy to Render/Railway/Fly for public URL.
+- Code repository: push this repo to GitHub.
+- Walkthrough video: record 5-6 minutes using the script below.
+- AI-native story: show Command Center, AI Chat, optional LLM env vars, and explain offline fallback.
+- System design story: show CRM service, channel service, callback receipt API, retries, idempotency, out-of-order handling, and persistence.
+
+## Walkthrough video script
+
+Product intro, 30 seconds:
+I built an AI-native shopper CRM for a D2C brand called Loom & Lane. The product focuses on the Xeno loop: ingest shopper data, decide who to talk to, generate the right campaign, send through messaging channels, and track performance through delivery and engagement receipts.
+
+Functional demo, 90 seconds:
+Start in Command Center. Generate an AI draft from the default prompt. Show the suggested segment, channel, message, send window, and audience size. Create the campaign, then either send it or schedule it for 30 seconds. Open Receipt Loop and show callbacks arriving. Open Campaigns and show sent, delivered, opened, read, clicked, failed, and attributed revenue. Open AI Chat and ask a strategy question.
+
+Architecture, 60 seconds:
+The browser calls the CRM API. The CRM owns customers, orders, segments, campaigns, communications, and receipts. When a campaign is sent, the CRM calls a separate channel service over HTTP. The channel service simulates lifecycle events and asynchronously calls back into the CRM receipt API. Receipts are idempotent and status updates are ranked so out-of-order events cannot downgrade state.
+
+Code walkthrough, 60 seconds:
+Show `lib/crm-app.js` for APIs and receipt ingestion, `lib/channel-app.js` and `lib/channel.js` for the channel stub, `lib/store.js` for segmentation and metrics, `lib/ai.js` for LLM-first/offline AI planning, and `public/app.js` for the UI workflow.
+
+AI-native workflow, 60 seconds:
+Explain that AI is woven into the product through campaign drafting and chat-first strategy. The app can use a real OpenAI-compatible API when `OPENAI_API_KEY` is present, but falls back to a deterministic local planner so the demo remains reliable. Also mention using AI during development to scope, review, and harden the system.
+
+Tradeoffs, 30 seconds:
+For this take-home I used JSON persistence and local services to keep the project easy to run. At production scale I would use Postgres or MongoDB, queue campaign sends, deploy channel workers separately, and aggregate metrics from an event stream.

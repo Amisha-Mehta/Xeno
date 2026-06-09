@@ -734,6 +734,14 @@ tbody tr:hover {
   color: var(--ochre);
 }
 
+.status-scheduled {
+  color: var(--blue);
+}
+
+.attribution-value {
+  text-align: right;
+}
+
 /* ----------------------------------------------------------- */
 /* Responsive                                                  */
 /* ----------------------------------------------------------- */

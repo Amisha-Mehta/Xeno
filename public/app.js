@@ -1,7 +1,3 @@
-// ---------------------------------------------------------------
-// Xeno Mini CRM — Frontend
-// ---------------------------------------------------------------
-
 let appState = null;
 let latestDraft = null;
 let latestCampaignId = null;
@@ -31,9 +27,15 @@ function el(id) {
   return document.getElementById(id);
 }
 
-// ---------------------------------------------------------------
-// Toast notifications
-// ---------------------------------------------------------------
+function safe(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]));
+}
 
 function toast(message, type = 'info') {
   const container = el('toastContainer');
@@ -46,10 +48,6 @@ function toast(message, type = 'info') {
     setTimeout(() => toastEl.remove(), 300);
   }, 3200);
 }
-
-// ---------------------------------------------------------------
-// API helper
-// ---------------------------------------------------------------
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -64,14 +62,15 @@ async function api(path, options = {}) {
   return response.json();
 }
 
-// ---------------------------------------------------------------
-// Toggle helpers
-// ---------------------------------------------------------------
+function show(elId) {
+  el(elId)?.classList.remove('hidden');
+}
 
-function show(elId) { el(elId).classList.remove('hidden'); }
-function hide(elId) { el(elId).classList.add('hidden'); }
+function hide(elId) {
+  el(elId)?.classList.add('hidden');
+}
 
-function toggleEmpty(containerId, emptyId, items) {
+function toggleEmpty(emptyId, items) {
   if (items && items.length > 0) {
     hide(emptyId);
   } else {
@@ -79,12 +78,8 @@ function toggleEmpty(containerId, emptyId, items) {
   }
 }
 
-// ---------------------------------------------------------------
-// Metrics grid
-// ---------------------------------------------------------------
-
 function metric(label, value) {
-  return `<div class="metric"><span>${label}</span><strong>${value}</strong></div>`;
+  return `<div class="metric"><span>${safe(label)}</span><strong>${safe(value)}</strong></div>`;
 }
 
 function renderMetrics() {
@@ -97,13 +92,9 @@ function renderMetrics() {
   ].join('');
 }
 
-// ---------------------------------------------------------------
-// Attribution panel
-// ---------------------------------------------------------------
-
 function renderAttribution() {
   const campaigns = appState.campaigns || [];
-  const attributed = campaigns.filter((c) => (c.metrics?.attributedOrders || 0) > 0);
+  const attributed = campaigns.filter((campaign) => (campaign.metrics?.attributedOrders || 0) > 0);
 
   if (!attributed.length) {
     el('attributionPanel').innerHTML =
@@ -111,53 +102,59 @@ function renderAttribution() {
     return;
   }
 
-  el('attributionPanel').innerHTML = attributed.slice(0, 3).map((c) => {
-    const m = c.metrics || {};
-    const roi = m.revenueAttributed > 0
-      ? `${money.format(m.revenueAttributed)} from ${m.attributedOrders} orders`
-      : 'Awaiting attribution';
+  el('attributionPanel').innerHTML = attributed.slice(0, 4).map((campaign) => {
+    const metrics = campaign.metrics || {};
+    const clickRate = metrics.sent ? pct((metrics.clicked || 0) / metrics.sent) : '0%';
     return `
       <div class="attribution-row">
         <div>
-          <strong>${c.name}</strong>
-          <div class="subtle">${c.channel} · ${c.status}</div>
+          <strong>${safe(campaign.name)}</strong>
+          <div class="subtle">${safe(campaign.channel)} · ${safe(campaign.status)} · ${clickRate} click rate</div>
         </div>
         <div class="attribution-value">
-          <span class="attribution-revenue">${roi}</span>
+          <span class="attribution-revenue">${money.format(metrics.revenueAttributed || 0)}</span>
+          <div class="subtle">${metrics.attributedOrders || 0} orders</div>
         </div>
       </div>
     `;
   }).join('');
 }
 
-// ---------------------------------------------------------------
-// Campaign cards
-// ---------------------------------------------------------------
-
 function renderCampaignCard(campaign, compact = false) {
   const metrics = campaign.metrics || {};
-  const cells = ['sent', 'delivered', 'opened', 'read', 'clicked', 'failed']
-    .map((key) => `<div class="progress-cell">${key}<strong>${metrics[key] || 0}</strong></div>`)
+  const cells = ['sent', 'delivered', 'opened', 'read', 'clicked', 'failed', 'attributedOrders']
+    .map((key) => `<div class="progress-cell">${safe(key)}<strong>${metrics[key] || 0}</strong></div>`)
     .join('');
+
+  let action = '<span class="status-pill">Tracked</span>';
+  if (campaign.status === 'draft') {
+    action = `
+      <div class="row-actions">
+        <button class="ghost schedule-btn" data-campaign-id="${campaign.id}">Schedule</button>
+        <button class="primary send-btn" data-campaign-id="${campaign.id}">Send now</button>
+      </div>
+    `;
+  } else if (campaign.status === 'sending') {
+    action = '<span class="status-pill status-sending">Sending...</span>';
+  } else if (campaign.status === 'scheduled') {
+    action = `<span class="status-pill status-scheduled">Scheduled ${campaign.scheduledFor ? fmtDate(campaign.scheduledFor) : ''}</span>`;
+  }
+
   return `
     <article class="campaign-card">
       <div class="panel-heading">
         <div>
-          <h3>${campaign.name}</h3>
+          <h3>${safe(campaign.name)}</h3>
           <div class="campaign-meta">
-            <span>${campaign.channel}</span>
-            <span class="status-${campaign.status}">${campaign.status}</span>
+            <span>${safe(campaign.channel)}</span>
+            <span class="status-${safe(campaign.status)}">${safe(campaign.status)}</span>
             <span>${campaign.audienceSize || metrics.sent || 0} shoppers</span>
             ${metrics.revenueAttributed ? `<span>${money.format(metrics.revenueAttributed)} attributed</span>` : ''}
           </div>
         </div>
-        ${campaign.status === 'draft'
-          ? `<button class="primary send-btn" data-campaign-id="${campaign.id}">Send now</button>`
-          : campaign.status === 'sending'
-            ? '<span class="status-pill status-sending">Sending…</span>'
-            : '<span class="status-pill">Tracked</span>'}
+        ${action}
       </div>
-      ${compact ? '' : `<p class="subtle">${campaign.aiSummary || campaign.subject || 'Personalized campaign'}</p>`}
+      ${compact ? '' : `<p class="subtle">${safe(campaign.aiSummary || campaign.subject || 'Personalized campaign')}</p>`}
       <div class="progress-grid">${cells}</div>
     </article>
   `;
@@ -167,15 +164,11 @@ function renderCampaigns() {
   const campaigns = appState.campaigns || [];
   const radar = el('campaignRadar');
   if (radar) {
-    radar.innerHTML = campaigns.slice(0, 3).map((c) => renderCampaignCard(c, true)).join('');
+    radar.innerHTML = campaigns.slice(0, 3).map((campaign) => renderCampaignCard(campaign, true)).join('');
   }
-  el('campaignList').innerHTML = campaigns.map((c) => renderCampaignCard(c)).join('');
-  toggleEmpty('campaignList', 'campaignsEmpty', campaigns);
+  el('campaignList').innerHTML = campaigns.map((campaign) => renderCampaignCard(campaign)).join('');
+  toggleEmpty('campaignsEmpty', campaigns);
 }
-
-// ---------------------------------------------------------------
-// Segments & Customers
-// ---------------------------------------------------------------
 
 function renderSegments() {
   const segments = appState.segments || [];
@@ -183,77 +176,69 @@ function renderSegments() {
     <article class="segment-card">
       <div class="panel-heading">
         <div>
-          <h3>${segment.name}</h3>
-          <p class="subtle">${segment.description}</p>
+          <h3>${safe(segment.name)}</h3>
+          <p class="subtle">${safe(segment.description)}</p>
         </div>
         <span class="chip">${segment.estimatedCount} shoppers</span>
       </div>
       <div class="campaign-meta">
-        <span>${segment.type}</span>
-        <span>${segment.rules.kind}</span>
+        <span>${safe(segment.type)}</span>
+        <span>${safe(segment.rules.kind || 'compound')}</span>
       </div>
     </article>
   `).join('');
-  toggleEmpty('segmentsList', 'segmentsEmpty', segments);
+  toggleEmpty('segmentsEmpty', segments);
 }
 
 function renderCustomers() {
   const customers = appState.customers || [];
   el('customersTable').innerHTML = customers.map((customer) => `
     <tr>
-      <td><strong>${customer.name}</strong><div class="subtle">${customer.city} · ${(customer.segmentTags || []).join(', ')}</div></td>
-      <td>${customer.preferredChannel}<div class="subtle">${customer.optedIn ? 'opted in' : 'opted out'}</div></td>
+      <td><strong>${safe(customer.name)}</strong><div class="subtle">${safe(customer.city)} · ${safe((customer.segmentTags || []).join(', '))}</div></td>
+      <td>${safe(customer.preferredChannel)}<div class="subtle">${customer.optedIn ? 'opted in' : 'opted out'}</div></td>
       <td>${money.format(customer.metrics.totalSpend)}<div class="subtle">${customer.metrics.orderCount} orders</div></td>
-      <td>${customer.metrics.lastOrder ? customer.metrics.lastOrder.product : 'No orders'}<div class="subtle">${customer.metrics.daysSinceLastOrder === Infinity ? '—' : customer.metrics.daysSinceLastOrder + ' days ago'}</div></td>
+      <td>${safe(customer.metrics.lastOrder ? customer.metrics.lastOrder.product : 'No orders')}<div class="subtle">${customer.metrics.daysSinceLastOrder === Infinity ? '-' : customer.metrics.daysSinceLastOrder + ' days ago'}</div></td>
     </tr>
   `).join('');
-  toggleEmpty('customersTable', 'customersEmpty', customers);
+  toggleEmpty('customersEmpty', customers);
 }
-
-// ---------------------------------------------------------------
-// Receipts & Communications
-// ---------------------------------------------------------------
 
 function renderReceipts() {
   const receipts = appState.receipts || [];
-  const comms = appState.communications || [];
+  const communications = appState.communications || [];
 
   el('receiptStream').innerHTML = receipts.slice(0, 24).map((receipt) => `
     <div class="receipt-row">
       <div>
-        <strong class="state-${receipt.type}">${receipt.type}</strong>
-        <div class="subtle">${receipt.channel || 'crm'} · ${receipt.communicationId}</div>
+        <strong class="state-${safe(receipt.type)}">${safe(receipt.type)}</strong>
+        <div class="subtle">${safe(receipt.channel || 'crm')} · ${safe(receipt.communicationId)}</div>
       </div>
       <span class="subtle">${fmtDate(receipt.timestamp)}</span>
     </div>
   `).join('');
-  toggleEmpty('receiptStream', 'receiptsEmpty', receipts);
+  toggleEmpty('receiptsEmpty', receipts);
 
-  el('communicationStream').innerHTML = comms.slice(0, 24).map((communication) => {
+  el('communicationStream').innerHTML = communications.slice(0, 24).map((communication) => {
     const customer = (appState.customers || []).find((item) => item.id === communication.customerId);
+    const message = communication.message || '';
     return `
       <div class="communication-row">
         <div>
-          <strong>${customer ? customer.name : communication.customerId}</strong>
-          <div class="subtle">${(communication.message || '').slice(0, 86)}${(communication.message || '').length > 86 ? '...' : ''}</div>
+          <strong>${safe(customer ? customer.name : communication.customerId)}</strong>
+          <div class="subtle">${safe(message.slice(0, 86))}${message.length > 86 ? '...' : ''}</div>
         </div>
-        <span class="chip state-${communication.status}">${communication.status}</span>
+        <span class="chip state-${safe(communication.status)}">${safe(communication.status)}</span>
       </div>
     `;
   }).join('');
-  toggleEmpty('communicationStream', 'communicationsEmpty', comms);
+  toggleEmpty('communicationsEmpty', communications);
 }
-
-// ---------------------------------------------------------------
-// Draft rendering
-// ---------------------------------------------------------------
 
 function renderDraft(draft) {
   hide('draftEmpty');
   const topSpenders = (draft.summary.topSpenders || [])
-    .map((item) => `<span>${item.name}: ${money.format(item.spend)}</span>`)
+    .map((item) => `<span>${safe(item.name)}: ${money.format(item.spend)}</span>`)
     .join('');
-
   const aiLabel = draft.aiMode === 'llm' ? 'LLM-powered' : 'Rule-based';
   el('aiModeBadge').textContent = aiLabel;
 
@@ -261,19 +246,19 @@ function renderDraft(draft) {
     <article class="draft-card">
       <div class="panel-heading">
         <div>
-          <p class="eyebrow">Suggested segment · ${aiLabel}</p>
-          <h3>${draft.segment.name}</h3>
-          <p class="subtle">${draft.segment.description}</p>
+          <p class="eyebrow">Suggested segment · ${safe(aiLabel)}</p>
+          <h3>${safe(draft.segment.name)}</h3>
+          <p class="subtle">${safe(draft.segment.description)}</p>
         </div>
         <span class="chip">${draft.summary.audienceSize} shoppers</span>
       </div>
       <div class="mini-grid">
-        <div class="mini-stat"><span>Channel</span><strong>${draft.message.channel}</strong></div>
+        <div class="mini-stat"><span>Channel</span><strong>${safe(draft.message.channel)}</strong></div>
         <div class="mini-stat"><span>Avg spend</span><strong>${money.format(draft.summary.avgSpend)}</strong></div>
-        <div class="mini-stat"><span>Send window</span><strong>${draft.recommendation.sendWindow}</strong></div>
+        <div class="mini-stat"><span>Send window</span><strong>${safe(draft.recommendation.sendWindow)}</strong></div>
       </div>
-      <p class="subtle">${(draft.message.rationale || []).join(' ')}</p>
-      <div class="draft-message">${draft.message.body}</div>
+      <p class="subtle">${safe((draft.message.rationale || []).join(' '))}</p>
+      <div class="draft-message">${safe(draft.message.body)}</div>
       <div class="campaign-meta">${topSpenders || '<span>No matching shoppers yet</span>'}</div>
     </article>
   `;
@@ -284,15 +269,11 @@ function renderNoDraft() {
   show('draftEmpty');
 }
 
-// ---------------------------------------------------------------
-// AI Chat
-// ---------------------------------------------------------------
-
 function appendChatMessage(text, role) {
   const container = el('chatMessages');
   const div = document.createElement('div');
   div.className = `chat-msg ${role}`;
-  div.innerHTML = `<div class="chat-msg-content">${text}</div>`;
+  div.innerHTML = `<div class="chat-msg-content">${safe(text)}</div>`;
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
 }
@@ -305,20 +286,12 @@ async function sendChat() {
   input.value = '';
   isChatting = true;
   el('chatSendBtn').disabled = true;
-
   appendChatMessage(message, 'user');
 
   try {
-    const result = await api('/api/ai/chat', {
-      method: 'POST',
-      body: { message }
-    });
+    const result = await api('/api/ai/chat', { method: 'POST', body: { message } });
     appendChatMessage(result.reply, 'assistant');
-    if (result.mode === 'llm') {
-      el('chatModeBadge').textContent = 'LLM Live';
-    } else {
-      el('chatModeBadge').textContent = 'Offline mode';
-    }
+    el('chatModeBadge').textContent = result.mode === 'llm' ? 'LLM Live' : 'Offline mode';
   } catch (err) {
     appendChatMessage('Sorry, something went wrong. Try again.', 'assistant');
     toast('Chat failed: ' + err.message, 'error');
@@ -328,10 +301,6 @@ async function sendChat() {
     input.focus();
   }
 }
-
-// ---------------------------------------------------------------
-// Actions
-// ---------------------------------------------------------------
 
 async function refresh() {
   try {
@@ -376,7 +345,7 @@ async function generateDraft() {
 async function createCampaign() {
   if (!latestDraft) {
     toast('Generate a draft first', 'warn');
-    return;
+    return null;
   }
   try {
     const segmentResponse = await api('/api/segments', {
@@ -403,22 +372,28 @@ async function createCampaign() {
     latestCampaignId = campaignResponse.campaign.id;
     toast('Campaign created as draft');
     await refresh();
+    return latestCampaignId;
   } catch (err) {
     toast('Failed to create campaign: ' + err.message, 'error');
+    return null;
   }
 }
 
+async function ensureDraftCampaign() {
+  if (latestCampaignId) return latestCampaignId;
+  return createCampaign();
+}
+
 async function sendCampaign(campaignId) {
-  const id = campaignId || latestCampaignId || (appState.campaigns || []).find((c) => c.status === 'draft')?.id;
+  const id = campaignId || latestCampaignId || (appState.campaigns || []).find((campaign) => campaign.status === 'draft')?.id;
   if (!id) {
     toast('No draft campaign to send. Create one first.', 'warn');
     return;
   }
   try {
     await api(`/api/campaigns/${id}/send`, { method: 'POST' });
-    toast('Campaign sent! Watching for channel callbacks...');
+    toast('Campaign sent. Watching for channel callbacks...');
     await refresh();
-    // Poll for receipt updates
     setTimeout(refresh, 1600);
     setTimeout(refresh, 3600);
     setTimeout(refresh, 7000);
@@ -428,15 +403,34 @@ async function sendCampaign(campaignId) {
   }
 }
 
+async function scheduleCampaign(campaignId) {
+  const id = campaignId || await ensureDraftCampaign();
+  if (!id) {
+    toast('No campaign to schedule. Generate a draft first.', 'warn');
+    return;
+  }
+  try {
+    await api(`/api/campaigns/${id}/schedule`, {
+      method: 'POST',
+      body: { delayMs: 30000 }
+    });
+    toast('Campaign scheduled for 30 seconds from now');
+    await refresh();
+    setTimeout(refresh, 32000);
+    setTimeout(refresh, 41000);
+  } catch (err) {
+    toast('Schedule failed: ' + err.message, 'error');
+  }
+}
+
 function bindDynamicButtons() {
   document.querySelectorAll('.send-btn').forEach((button) => {
     button.onclick = () => sendCampaign(button.dataset.campaignId);
   });
+  document.querySelectorAll('.schedule-btn').forEach((button) => {
+    button.onclick = () => scheduleCampaign(button.dataset.campaignId);
+  });
 }
-
-// ---------------------------------------------------------------
-// Navigation
-// ---------------------------------------------------------------
 
 function setupNavigation() {
   document.querySelectorAll('.nav-item').forEach((button) => {
@@ -449,29 +443,21 @@ function setupNavigation() {
   });
 }
 
-// ---------------------------------------------------------------
-// Init
-// ---------------------------------------------------------------
-
 document.addEventListener('DOMContentLoaded', async () => {
   setupNavigation();
-
   el('refreshBtn').addEventListener('click', refresh);
   el('draftBtn').addEventListener('click', generateDraft);
   el('createCampaignBtn').addEventListener('click', createCampaign);
+  el('scheduleCampaignBtn').addEventListener('click', () => scheduleCampaign());
   el('sendLatestBtn').addEventListener('click', () => sendCampaign());
   el('addSegmentBtn')?.addEventListener('click', () => toast('Use the Command Center AI draft to create an audience segment.', 'info'));
   el('addCustomerBtn')?.addEventListener('click', () => toast('Customer ingestion is available through POST /api/customers.', 'info'));
-
-  // Chat
   el('chatSendBtn').addEventListener('click', sendChat);
-  el('chatInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') sendChat();
+  el('chatInput').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') sendChat();
   });
 
   await refresh();
   await generateDraft();
-
-  // Auto-refresh for real-time receipt stream
   setInterval(refresh, 8000);
 });

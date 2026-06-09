@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { createSeedState, getAudienceMembers, computeCampaignMetrics, uid } = require('../lib/store');
+const { createSeedState, getAudienceMembers, computeCampaignMetrics, getCampaignById, uid } = require('../lib/store');
 const { draftCampaignFromPrompt } = require('../lib/ai');
 const { createCrmApp } = require('../lib/crm-app');
 
@@ -77,6 +77,51 @@ function testOutOfOrderReceiptsDoNotDowngrade() {
   assert.equal(communication.status, 'clicked');
 }
 
+function testCompoundSegments() {
+  const state = createSeedState();
+  const segment = {
+    rules: {
+      all: [
+        { kind: 'high_value', minSpend: 8000, optInOnly: true },
+        { kind: 'custom', loyaltyTier: 'gold', optInOnly: true }
+      ]
+    }
+  };
+  const audience = getAudienceMembers(state, segment);
+  assert.ok(audience.length >= 1);
+  audience.forEach((customer) => {
+    assert.equal(customer.optedIn, true);
+    assert.equal(customer.attributes.loyaltyTier, 'gold');
+  });
+}
+
+async function testSchedulingEndpoint() {
+  const state = createSeedState();
+  const app = createCrmApp({
+    state,
+    persist: false,
+    channelUrl: 'http://127.0.0.1:1',
+    crmUrl: 'http://127.0.0.1:2'
+  });
+  const campaign = state.campaigns[0];
+
+  const server = app.server.listen(0);
+  const port = server.address().port;
+  const response = await fetch(`http://127.0.0.1:${port}/api/campaigns/${campaign.id}/schedule`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ delayMs: 60000 })
+  });
+  const body = await response.json();
+  server.close();
+  app.scheduleTimers.forEach((timer) => clearTimeout(timer));
+  app.scheduleTimers.clear();
+
+  assert.equal(response.status, 202);
+  assert.equal(getCampaignById(state, campaign.id).status, 'scheduled');
+  assert.ok(body.scheduledFor);
+}
+
 async function run() {
   await testAiDraftCreatesAudience();
   console.log('passed testAiDraftCreatesAudience');
@@ -90,7 +135,13 @@ async function run() {
   testOutOfOrderReceiptsDoNotDowngrade();
   console.log('passed testOutOfOrderReceiptsDoNotDowngrade');
 
-  console.log('All 4 tests passed.');
+  testCompoundSegments();
+  console.log('passed testCompoundSegments');
+
+  await testSchedulingEndpoint();
+  console.log('passed testSchedulingEndpoint');
+
+  console.log('All 6 tests passed.');
 }
 
 run().catch((err) => {
