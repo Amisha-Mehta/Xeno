@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Xeno CRM | Customer Portal Login</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+    }
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+      padding: 24px;
+    }
+    .login-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 36px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1);
+    }
+    .login-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .login-brand-mark {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      font-weight: 800;
+      font-size: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(16,185,129,0.35);
+    }
+    .login-brand h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .login-brand p {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .login-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+    .login-subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 150ms;
+    }
+    .form-group input:focus {
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16,185,129,0.08);
+    }
+    .login-error {
+      background: var(--danger-light);
+      color: var(--danger-text);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .login-error.visible { display: block; }
+    .login-btn {
+      width: 100%;
+      padding: 12px;
+      background: #10b981;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 150ms;
+    }
+    .login-btn:hover { background: #059669; }
+    .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .login-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .login-footer a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .login-footer a:hover { text-decoration: underline; }
+    .login-hint {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #166534;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="login-brand-mark">L</div>
+        <div>
+          <h1>Loom & Lane</h1>
+          <p>Customer Portal</p>
+        </div>
+      </div>
+
+      <h2 class="login-title">Access your account</h2>
+      <p class="login-subtitle">Enter the email and phone number linked to your Loom & Lane account to view your orders and messages.</p>
+
+      <div class="login-hint">
+        <strong>Demo:</strong> Try <code>aanya@loomandlane.com</code> with phone <code>+91 90000 10001</code>
+      </div>
+
+      <div class="login-error" id="loginError"></div>
+
+      <form id="customerLoginForm" autocomplete="on">
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input type="email" id="email" name="email" placeholder="yourname@loomandlane.com" required autofocus>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone number</label>
+          <input type="tel" id="phone" name="phone" placeholder="+91 90000 10001" required>
+        </div>
+        <button type="submit" class="login-btn" id="loginBtn">Access My Portal</button>
+      </form>
+
+      <div class="login-footer">
+        Admin? <a href="/login.html">Sign in to the dashboard</a>
+      </div>
+    </div>
+  </div>
+  <script src="/customer-login.js"></script>
+</body>
+</html>

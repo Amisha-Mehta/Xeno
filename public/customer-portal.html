@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Loom & Lane | My Account</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    body {
+      background: var(--canvas);
+      min-height: 100vh;
+    }
+    .portal-shell {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+    .portal-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .portal-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .portal-brand-mark {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      font-weight: 800;
+      font-size: 18px;
+      border-radius: 10px;
+    }
+    .portal-brand h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .portal-brand p {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .portal-greeting {
+      margin-bottom: 28px;
+    }
+    .portal-greeting h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .portal-greeting p {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    .portal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.6fr;
+      gap: 24px;
+      align-items: start;
+    }
+    .portal-section {
+      margin-top: 28px;
+    }
+    .portal-section-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .profile-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .profile-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #a5b4fc, #818cf8);
+      color: #4338ca;
+      font-weight: 700;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .profile-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .profile-email {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .profile-details {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .profile-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .profile-row:last-child { border-bottom: none; }
+    .profile-label {
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .profile-value {
+      color: var(--ink);
+      font-weight: 600;
+    }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .stat-card {
+      text-align: center;
+      background: var(--canvas);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .stat-card span {
+      display: block;
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .stat-card strong {
+      display: block;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-top: 4px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .orders-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .orders-table th {
+      background: var(--canvas);
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .orders-table td {
+      padding: 12px 16px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+      color: var(--ink-soft);
+    }
+    .orders-table tr:last-child td { border-bottom: none; }
+    .message-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .message-channel {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    .message-body {
+      font-size: 13px;
+      color: var(--ink-soft);
+      line-height: 1.5;
+      white-space: pre-line;
+      background: var(--canvas);
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .message-date {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .empty-section {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--muted);
+      font-size: 13px;
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+    }
+    .logout-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 150ms;
+    }
+    .logout-btn:hover {
+      background: var(--danger-light);
+      color: var(--danger-text);
+      border-color: var(--danger);
+    }
+    .loading-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    @media (max-width: 768px) {
+      .portal-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="portal-shell">
+    <div class="portal-topbar">
+      <div class="portal-brand">
+        <div class="portal-brand-mark">L</div>
+        <div>
+          <h1>Loom & Lane</h1>
+          <p>My Account Portal</p>
+        </div>
+      </div>
+      <button class="logout-btn" id="logoutBtn">Sign Out</button>
+    </div>
+
+    <div id="portalContent">
+      <div class="loading-state">Loading your account...</div>
+    </div>
+  </div>
+  <script src="/customer-portal.js"></script>
+</body>
+</html>

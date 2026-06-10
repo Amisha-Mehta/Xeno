@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Xeno CRM | Admin Login</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    }
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+      padding: 24px;
+    }
+    .login-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 36px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    }
+    .login-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .login-brand-mark {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #4f46e5, #4338ca);
+      color: #fff;
+      font-weight: 800;
+      font-size: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(79,70,229,0.4);
+    }
+    .login-brand h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .login-brand p {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .login-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+    .login-subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 150ms;
+    }
+    .form-group input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79,70,229,0.08);
+    }
+    .login-error {
+      background: var(--danger-light);
+      color: var(--danger-text);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .login-error.visible {
+      display: block;
+    }
+    .login-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 150ms;
+    }
+    .login-btn:hover {
+      background: var(--primary-hover);
+    }
+    .login-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .login-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .login-footer a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .login-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="login-brand-mark">X</div>
+        <div>
+          <h1>Xeno CRM</h1>
+          <p>Shopper Command Desk</p>
+        </div>
+      </div>
+
+      <h2 class="login-title">Sign in to your workspace</h2>
+      <p class="login-subtitle">Enter your admin credentials to access the dashboard.</p>
+
+      <div class="login-error" id="loginError"></div>
+
+      <form id="loginForm" autocomplete="on">
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input type="email" id="email" name="email" placeholder="admin@xeno.io" required autofocus>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Enter password" required>
+        </div>
+        <button type="submit" class="login-btn" id="loginBtn">Sign in as Admin</button>
+      </form>
+
+      <div class="login-footer">
+        Are you a customer? <a href="/customer-login.html">Access your portal</a>
+      </div>
+    </div>
+  </div>
+  <script src="/login.js"></script>
+</body>
+</html>

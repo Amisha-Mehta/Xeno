@@ -107,9 +107,23 @@ async function testSchedulingEndpoint() {
 
   const server = app.server.listen(0);
   const port = server.address().port;
-  const response = await fetch(`http://127.0.0.1:${port}/api/campaigns/${campaign.id}/schedule`, {
+
+  // First, we need to log in as admin to get the cookie
+  const loginResponse = await fetch(`http://127.0.0.1:${port}/api/auth/admin/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'admin@xeno.io', password: 'admin123' })
+  });
+  assert.equal(loginResponse.status, 200);
+  const cookieHeader = loginResponse.headers.get('set-cookie');
+  assert.ok(cookieHeader);
+
+  const response = await fetch(`http://127.0.0.1:${port}/api/campaigns/${campaign.id}/schedule`, {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Cookie': cookieHeader
+    },
     body: JSON.stringify({ delayMs: 60000 })
   });
   const body = await response.json();
@@ -120,6 +134,125 @@ async function testSchedulingEndpoint() {
   assert.equal(response.status, 202);
   assert.equal(getCampaignById(state, campaign.id).status, 'scheduled');
   assert.ok(body.scheduledFor);
+}
+
+async function testAdminLoginSuccess() {
+  const state = createSeedState();
+  const app = createCrmApp({ state, persist: false });
+  const server = app.server.listen(0);
+  const port = server.address().port;
+
+  const response = await fetch(`http://127.0.0.1:${port}/api/auth/admin/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'admin@xeno.io', password: 'admin123' })
+  });
+  const body = await response.json();
+  const cookie = response.headers.get('set-cookie');
+
+  server.close();
+  assert.equal(response.status, 200);
+  assert.ok(body.ok);
+  assert.equal(body.role, 'admin');
+  assert.ok(cookie && cookie.includes('xeno_session='));
+}
+
+async function testAdminLoginFailure() {
+  const state = createSeedState();
+  const app = createCrmApp({ state, persist: false });
+  const server = app.server.listen(0);
+  const port = server.address().port;
+
+  const response = await fetch(`http://127.0.0.1:${port}/api/auth/admin/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'admin@xeno.io', password: 'wrongpassword' })
+  });
+  server.close();
+  assert.equal(response.status, 401);
+}
+
+async function testProtectedRouteRequiresAuth() {
+  const state = createSeedState();
+  const app = createCrmApp({ state, persist: false });
+  const server = app.server.listen(0);
+  const port = server.address().port;
+
+  const response = await fetch(`http://127.0.0.1:${port}/api/state`);
+  server.close();
+  assert.equal(response.status, 401);
+}
+
+async function testCustomerLoginSuccess() {
+  const state = createSeedState();
+  const app = createCrmApp({ state, persist: false });
+  const server = app.server.listen(0);
+  const port = server.address().port;
+
+  const response = await fetch(`http://127.0.0.1:${port}/api/auth/customer/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'aanya@loomandlane.com', phone: '+91 90000 10001' })
+  });
+  const body = await response.json();
+  const cookie = response.headers.get('set-cookie');
+
+  server.close();
+  assert.equal(response.status, 200);
+  assert.ok(body.ok);
+  assert.equal(body.role, 'customer');
+  assert.equal(body.customer.email, 'aanya@loomandlane.com');
+  assert.ok(cookie && cookie.includes('xeno_session='));
+}
+
+async function testCustomerPortalDataIsolation() {
+  const state = createSeedState();
+  const app = createCrmApp({ state, persist: false });
+  const server = app.server.listen(0);
+  const port = server.address().port;
+
+  const loginResponse = await fetch(`http://127.0.0.1:${port}/api/auth/customer/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'aanya@loomandlane.com', phone: '+91 90000 10001' })
+  });
+  const cookie = loginResponse.headers.get('set-cookie');
+
+  const response = await fetch(`http://127.0.0.1:${port}/api/state`, {
+    headers: { 'Cookie': cookie }
+  });
+
+  server.close();
+  assert.equal(response.status, 401);
+}
+
+async function testWhatsAppFallbackWhenNotConfigured() {
+  const { createChannelApp } = require('../lib/channel-app');
+  const channelApp = createChannelApp();
+  const channelServer = channelApp.server.listen(0);
+  const port = channelServer.address().port;
+
+  const state = createSeedState();
+  const campaign = state.campaigns[0];
+  const communications = state.communications.map(comm => {
+    const customer = state.customers.find(c => c.id === comm.customerId);
+    return { ...comm, customer };
+  });
+
+  const response = await fetch(`http://127.0.0.1:${port}/send`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      campaign,
+      communications,
+      callbackUrl: 'http://127.0.0.1:1/callback'
+    })
+  });
+  const body = await response.json();
+  channelServer.close();
+
+  assert.equal(response.status, 202);
+  assert.equal(body.mode, 'simulated');
 }
 
 async function run() {
@@ -141,7 +274,25 @@ async function run() {
   await testSchedulingEndpoint();
   console.log('passed testSchedulingEndpoint');
 
-  console.log('All 6 tests passed.');
+  await testAdminLoginSuccess();
+  console.log('passed testAdminLoginSuccess');
+
+  await testAdminLoginFailure();
+  console.log('passed testAdminLoginFailure');
+
+  await testProtectedRouteRequiresAuth();
+  console.log('passed testProtectedRouteRequiresAuth');
+
+  await testCustomerLoginSuccess();
+  console.log('passed testCustomerLoginSuccess');
+
+  await testCustomerPortalDataIsolation();
+  console.log('passed testCustomerPortalDataIsolation');
+
+  await testWhatsAppFallbackWhenNotConfigured();
+  console.log('passed testWhatsAppFallbackWhenNotConfigured');
+
+  console.log('All tests passed.');
 }
 
 run().catch((err) => {

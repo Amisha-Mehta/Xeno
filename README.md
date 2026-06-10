@@ -96,8 +96,16 @@ Campaign metrics dashboard
 - `POST /api/campaigns/:id/schedule`: schedule a draft campaign; the CRM sends it later through the same channel-service loop.
 - `POST /api/receipts`: CRM receipt callback API.
 - `POST /api/admin/reset`: reset demo data.
+- `POST /api/auth/admin/login`: validate admin credentials, set session cookie.
+- `POST /api/auth/customer/login`: validate customer email/phone, set session cookie.
+- `POST /api/auth/logout`: destroy session and clear session cookie.
+- `GET /api/auth/me`: retrieve active session status and role details.
+- `GET /api/customer/profile`: retrieve authenticated customer's profile metrics.
+- `GET /api/customer/orders`: retrieve authenticated customer's order history.
+- `GET /api/customer/messages`: retrieve communications sent to the logged-in customer.
 - `GET http://localhost:3001/health`: channel service health check.
 - `POST http://localhost:3001/send`: channel service send endpoint.
+- `POST http://localhost:3001/webhooks/whatsapp`: receive Meta Cloud API / Twilio status callbacks.
 
 ## Key files
 
@@ -110,6 +118,11 @@ Campaign metrics dashboard
 - `lib/store.js`: data model, seed data, segmentation, metrics.
 - `lib/ai.js`: deterministic AI-style campaign planner.
 - `lib/persistence.js`: JSON persistence.
+- `lib/auth.js`: session manager for admin & customer credentials.
+- `lib/whatsapp.js`: WhatsApp client abstraction for Meta Cloud API & Twilio.
+- `public/login.html`: premium admin login dashboard.
+- `public/customer-login.html`: clean login interface for customers.
+- `public/customer-portal.html`: customer profile, orders, and messages overview.
 - `public/`: dashboard UI.
 - `tests/run-tests.js`: focused behavior tests.
 
@@ -128,7 +141,10 @@ Campaign metrics dashboard
 - Added richer segmentation with `all`/`any` combinators, spend, city, lifecycle, loyalty tier, category, and channel filters.
 - Added AI chat mode plus optional LLM-backed campaign drafting.
 - Added campaign attribution panel for campaign-driven revenue.
-- Polished the UI to feel more elegant, professional, and demo-ready.
+- Added polished the UI to feel more elegant, professional, and demo-ready.
+- Added Admin/Owner session-based authentication to protect dashboard UI and CRM API endpoints.
+- Added Customer Login portal and separate customer-facing dashboard for order history, profile details, and campaign delivery tracking.
+- Added Real WhatsApp message sending support using Meta Cloud API and Twilio, with robust webhook status tracking.
 
 ## System design tradeoffs
 
@@ -145,6 +161,52 @@ OPENAI_API_KEY=your_key
 OPENAI_BASE_URL=https://api.openai.com/v1
 LLM_MODEL=gpt-4o-mini
 ```
+
+## Authentication & Portals
+
+### Admin / Owner Login
+- The main desk at `http://localhost:3000` is now protected by a secure login page.
+- Default Admin Credentials:
+  - **Email**: `admin@xeno.io`
+  - **Password**: `admin123`
+- Credentials can be customized via environment variables: `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
+- Session tokens are generated on successful validation and stored in-memory using HttpOnly cookies to restrict access to the CRM APIs.
+
+### Customer Portal
+- Customers can log into their personal portal at `http://localhost:3000/customer-login.html`.
+- Authentication requires matching both a registered customer's **Email** and **Phone** (no passwords required).
+- Inside the Customer Portal, customers can:
+  - View their profile attributes (loyalty tier, preferred channel, city, opt-in status).
+  - Track their total spend, average order value, and order history.
+  - Review all campaigns sent to them along with real-time delivery statuses (sent, delivered, read, clicked, failed).
+
+---
+
+## WhatsApp Integration
+
+The platform now supports sending real WhatsApp messages using either the **Meta Cloud API** or **Twilio** with a fallback to the simulated channel service.
+
+### Meta Cloud API Configuration
+Configure the following environment variables:
+```bash
+WHATSAPP_PROVIDER=meta
+WHATSAPP_PHONE_ID=your_phone_number_id
+WHATSAPP_ACCESS_TOKEN=your_permanent_or_temporary_access_token
+WHATSAPP_VERIFY_TOKEN=xeno_verify # Token used for webhook verification
+```
+
+### Twilio Configuration
+Configure the following environment variables:
+```bash
+WHATSAPP_PROVIDER=twilio
+TWILIO_ACCOUNT_SID=your_account_sid
+TWILIO_AUTH_TOKEN=your_auth_token
+TWILIO_WHATSAPP_FROM=your_twilio_whatsapp_number # e.g. +14155238886
+```
+
+### Webhook Status Callback
+- Expose the channel service webhook endpoint: `POST http://<your-domain>/webhooks/whatsapp`.
+- Incoming status reports (e.g., delivered, read, failed) from Meta or Twilio are parsed, mapped to CRM status types, and forwarded to the CRM callback endpoint to update campaign performance in real-time.
 
 ## Tests
 

@@ -59,6 +59,10 @@ async function api(path, options = {}) {
     ...options,
     body: options.body ? JSON.stringify(options.body) : undefined
   });
+  if (response.status === 401 && path !== '/api/auth/me') {
+    window.location.href = '/login.html';
+    throw new Error('Not authenticated');
+  }
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
     throw new Error(body.error || `Request failed: ${response.status}`);
@@ -760,7 +764,24 @@ async function resetDemoData() {
   }
 }
 
+async function checkAuth() {
+  try {
+    const session = await api('/api/auth/me');
+    if (!session || session.role !== 'admin') {
+      window.location.href = '/login.html';
+      return false;
+    }
+    return true;
+  } catch (err) {
+    window.location.href = '/login.html';
+    return false;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+  const authenticated = await checkAuth();
+  if (!authenticated) return;
+
   setupNavigation();
   el('refreshBtn').addEventListener('click', refresh);
   el('draftBtn').addEventListener('click', generateDraft);
@@ -774,6 +795,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   el('chatInput').addEventListener('keydown', (event) => {
     if (event.key === 'Enter') sendChat();
   });
+
+  const logoutBtn = el('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/login.html';
+      } catch (err) {
+        toast('Logout failed: ' + err.message, 'error');
+      }
+    });
+  }
 
   await refresh();
   await generateDraft();
