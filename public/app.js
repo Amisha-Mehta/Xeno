@@ -778,6 +778,260 @@ async function checkAuth() {
   }
 }
 
+// Modal helpers
+function openModal(modalId) {
+  el('modalBackdrop').classList.remove('hidden');
+  el(modalId).classList.remove('hidden');
+}
+
+function closeModals() {
+  el('modalBackdrop').classList.add('hidden');
+  el('addCustomerModal').classList.add('hidden');
+  el('addSegmentModal').classList.add('hidden');
+}
+
+// Ingest Customer
+async function handleAddCustomerSubmit() {
+  const name = el('custName').value;
+  const email = el('custEmail').value;
+  const phone = el('custPhone').value;
+  const city = el('custCity').value;
+  const loyaltyTier = el('custTier').value;
+  const preferredChannel = el('custChannel').value;
+
+  try {
+    await api('/api/customers', {
+      method: 'POST',
+      body: { name, email, phone, city, preferredChannel, attributes: { loyaltyTier } }
+    });
+    toast('Customer ingested successfully!', 'success');
+    closeModals();
+    el('addCustomerForm').reset();
+    await refresh();
+  } catch (err) {
+    toast('Failed to ingest customer: ' + err.message, 'error');
+  }
+}
+
+// Create Segment
+async function handleAddSegmentSubmit() {
+  const name = el('segName').value;
+  const description = el('segDesc').value;
+  const field = el('ruleField').value;
+  const val = el('ruleValue').value;
+
+  const rules = {
+    kind: 'custom',
+    optInOnly: false,
+    [field]: val
+  };
+
+  try {
+    await api('/api/segments', {
+      method: 'POST',
+      body: { name, description, type: 'manual', rules }
+    });
+    toast('Segment created successfully!', 'success');
+    closeModals();
+    el('addSegmentForm').reset();
+    await refresh();
+  } catch (err) {
+    toast('Failed to create segment: ' + err.message, 'error');
+  }
+}
+
+// Workspace Selector Dropdown
+function setupWorkspaceSelector() {
+  const wsBtn = el('workspaceSelectBtn');
+  const wsMenu = el('workspaceDropdownMenu');
+  const wsLabel = el('activeWorkspaceLabel');
+
+  if (wsBtn && wsMenu) {
+    wsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      wsMenu.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', () => {
+      wsMenu.classList.add('hidden');
+    });
+
+    document.querySelectorAll('.workspace-option').forEach((opt) => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const wsName = opt.dataset.ws;
+        
+        // Remove active class
+        document.querySelectorAll('.workspace-option').forEach((o) => o.classList.remove('active'));
+        opt.classList.add('active');
+        
+        // Update label
+        wsLabel.textContent = wsName;
+        toast(`Switched workspace to ${wsName}`, 'success');
+        wsMenu.classList.add('hidden');
+      });
+    });
+  }
+}
+
+// Global Search Filtering
+function setupGlobalSearch() {
+  const searchInput = el('globalSearchInput');
+  if (!searchInput) return;
+
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase().trim();
+    
+    // Find which view is currently active
+    const activeView = document.querySelector('.view.active');
+    if (!activeView) return;
+    const viewId = activeView.id;
+
+    if (viewId === 'customers') {
+      const rows = document.querySelectorAll('#customersTable tr');
+      rows.forEach((row) => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(query)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    } else if (viewId === 'segments') {
+      const cards = document.querySelectorAll('#segmentsList .segment-card');
+      cards.forEach((card) => {
+        const text = card.textContent.toLowerCase();
+        if (text.includes(query)) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    } else if (viewId === 'campaigns') {
+      const items = document.querySelectorAll('#campaignList .campaign-card');
+      items.forEach((item) => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(query)) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    } else if (viewId === 'command') {
+      // Filter recent campaigns list in the attribution panel
+      const atts = document.querySelectorAll('#attributionPanel .attribution-item');
+      atts.forEach((att) => {
+        const text = att.textContent.toLowerCase();
+        if (text.includes(query)) {
+          att.style.display = '';
+        } else {
+          att.style.display = 'none';
+        }
+      });
+    }
+  });
+}
+
+// WhatsApp Config API calls
+async function loadWhatsAppConfig() {
+  const providerSelect = el('waProvider');
+  const metaFields = el('metaFields');
+  const twilioFields = el('twilioFields');
+
+  if (!providerSelect) return;
+
+  try {
+    const config = await api('/api/admin/whatsapp-config');
+    providerSelect.value = config.provider || 'meta';
+    
+    el('waMetaPhoneId').value = config.metaPhoneId || '';
+    el('waMetaAccessToken').value = config.metaAccessToken || '';
+    
+    el('waTwilioSid').value = config.twilioAccountSid || '';
+    el('waTwilioToken').value = config.twilioAuthToken || '';
+    el('waTwilioFrom').value = config.twilioWhatsappFrom || '';
+
+    // Toggle fields visibility
+    if (config.provider === 'twilio') {
+      metaFields.classList.add('hidden');
+      twilioFields.classList.remove('hidden');
+    } else {
+      metaFields.classList.remove('hidden');
+      twilioFields.classList.add('hidden');
+    }
+
+    // Update status badge
+    updateWhatsAppStatusBadge(config.isConfigured, config.provider);
+  } catch (err) {
+    console.error('Failed to load WhatsApp config', err);
+  }
+}
+
+function updateWhatsAppStatusBadge(isConfigured, provider) {
+  const statusBadge = el('waConfigStatus');
+  if (!statusBadge) return;
+
+  if (isConfigured) {
+    statusBadge.className = 'status-pill success';
+    statusBadge.textContent = `Live WhatsApp Connected (${provider.toUpperCase()})`;
+  } else {
+    statusBadge.className = 'status-pill warning';
+    statusBadge.textContent = 'Simulation Fallback Active';
+  }
+}
+
+async function saveWhatsAppConfig() {
+  const provider = el('waProvider').value;
+  const metaPhoneId = el('waMetaPhoneId').value;
+  const metaAccessToken = el('waMetaAccessToken').value;
+  const twilioAccountSid = el('waTwilioSid').value;
+  const twilioAuthToken = el('waTwilioToken').value;
+  const twilioWhatsappFrom = el('waTwilioFrom').value;
+
+  try {
+    const result = await api('/api/admin/whatsapp-config', {
+      method: 'POST',
+      body: {
+        provider,
+        metaPhoneId,
+        metaAccessToken,
+        twilioAccountSid,
+        twilioAuthToken,
+        twilioWhatsappFrom
+      }
+    });
+    
+    toast('WhatsApp configuration saved successfully!', 'success');
+    updateWhatsAppStatusBadge(result.isConfigured, provider);
+  } catch (err) {
+    toast('Failed to save config: ' + err.message, 'error');
+  }
+}
+
+function setupWhatsAppConfigListeners() {
+  const providerSelect = el('waProvider');
+  const configForm = el('whatsappConfigForm');
+  const metaFields = el('metaFields');
+  const twilioFields = el('twilioFields');
+
+  if (providerSelect) {
+    providerSelect.addEventListener('change', () => {
+      const prov = providerSelect.value;
+      if (prov === 'twilio') {
+        metaFields.classList.add('hidden');
+        twilioFields.classList.remove('hidden');
+      } else {
+        metaFields.classList.remove('hidden');
+        twilioFields.classList.add('hidden');
+      }
+    });
+  }
+
+  if (configForm) {
+    configForm.addEventListener('submit', saveWhatsAppConfig);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const authenticated = await checkAuth();
   if (!authenticated) return;
@@ -788,8 +1042,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   el('createCampaignBtn').addEventListener('click', createCampaign);
   el('scheduleCampaignBtn').addEventListener('click', () => scheduleCampaign());
   el('sendLatestBtn').addEventListener('click', () => sendCampaign());
-  el('addSegmentBtn')?.addEventListener('click', () => toast('Use the Command Center AI draft to create an audience segment.', 'info'));
-  el('addCustomerBtn')?.addEventListener('click', () => toast('Customer ingestion is available through POST /api/customers.', 'info'));
+  
+  // Modal trigger actions
+  el('addCustomerBtn')?.addEventListener('click', () => openModal('addCustomerModal'));
+  el('addSegmentBtn')?.addEventListener('click', () => openModal('addSegmentModal'));
+  
+  document.querySelectorAll('.closeModalBtn').forEach(btn => {
+    btn.addEventListener('click', closeModals);
+  });
+  el('modalBackdrop').addEventListener('click', (e) => {
+    if (e.target === el('modalBackdrop')) closeModals();
+  });
+
+  el('addCustomerForm').addEventListener('submit', handleAddCustomerSubmit);
+  el('addSegmentForm').addEventListener('submit', handleAddSegmentSubmit);
+
+  // Additional Topbar logic
+  setupWorkspaceSelector();
+  setupGlobalSearch();
+
+  // Settings screen configs
+  setupWhatsAppConfigListeners();
+  await loadWhatsAppConfig();
+
   el('resetDemoBtn')?.addEventListener('click', resetDemoData);
   el('chatSendBtn').addEventListener('click', sendChat);
   el('chatInput').addEventListener('keydown', (event) => {
