@@ -132,6 +132,27 @@
               </div>
             </div>
 
+            <!-- Reviewer Quick-Start Walkthrough Panel -->
+            <div style="background: rgba(79, 70, 229, 0.05); border: 1px dashed var(--primary); padding: 16px; border-radius: var(--radius); margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 16px;">🚀</span>
+                <strong style="color: var(--primary); font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif;">Hiring Manager Demo Guide</strong>
+              </div>
+              <p style="font-size: 12px; color: var(--ink-soft); margin: 0; line-height: 1.5;">
+                Follow this quick flow to test the end-to-end event callback loops:
+              </p>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; font-size: 11.5px; color: var(--ink-soft);">
+                <div style="background: var(--panel); padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
+                  <strong>1. AI Prompt</strong><br>Submit the prompt in the Planner below to compile a custom audience draft.
+                </div>
+                <div style="background: var(--panel); padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
+                  <strong>2. Save & Launch</strong><br>Click "Save Campaign" then go to "Campaigns" tab to send it.
+                </div>
+                <div style="background: var(--panel); padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
+                  <strong>3. Stub Console</strong><br>Open <a href="http://localhost:3001/" target="_blank" style="color: var(--primary); font-weight: 600; text-decoration: underline;">Developer Stub Console (Port 3001)</a> to watch simulated webhooks live.
+                </div>
+              </div>
+            </div>
             <!-- Dashboard Stats Grid (Dynamically updated) -->
             <div class="metrics-grid" id="metricsGrid">
               <!-- Placeholder cards updated by app.js -->

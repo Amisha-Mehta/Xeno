@@ -6,6 +6,12 @@ GitHub one-line summary:
 
 > AI-native shopper CRM that segments customers, drafts campaigns, sends through a stubbed channel service, and tracks async delivery/engagement receipts.
 
+## 🎯 Quick Code Navigation for Recruiters
+
+* 🛡️ **Idempotence & Status Ranking**: [lib/crm-app.js](file:///c:/Users/dell/Desktop/Xeno/lib/crm-app.js#L158-L205) — *Prevents duplicate event metrics and ensures out-of-order webhook callbacks cannot downgrade communication states.*
+* 🗂️ **Behavioral Shopper Segmentation**: [lib/store.js](file:///c:/Users/dell/Desktop/Xeno/lib/store.js) — *Implements rules matching logic based on shopper spending, loyalty tier, geography, and preferred channels.*
+* 🔌 **Developer Console & Channel Stub Service**: [lib/channel-app.js](file:///c:/Users/dell/Desktop/Xeno/lib/channel-app.js) & [lib/channel-console.html](file:///c:/Users/dell/Desktop/Xeno/lib/channel-console.html) — *Simulates real-world SMS/RCS/WhatsApp callback lifecycles and provides developer webhook simulator controls.*
+
 ## Run locally
 
 ```bash
@@ -132,13 +138,31 @@ The application consists of a two-service, callback-driven event loop that close
 - Added Customer Login portal and separate customer-facing dashboard for order history, profile details, and campaign delivery tracking.
 - Added Real WhatsApp message sending support using Meta Cloud API and Twilio, with robust webhook status tracking.
 
-## System design tradeoffs
+## ⚙️ System Design & Scaling Tradeoffs
 
-For the take-home scope, JSON persistence keeps the project easy to run and review. At production scale, I would move state to Postgres or MongoDB, send campaign jobs through a queue, store receipts as an append-only event stream, process callbacks with workers, and aggregate metrics asynchronously.
+For the prototype take-home scope, conscious architectural tradeoffs were made to balance local ease-of-use with robust logic. Below is the blueprint of how this system scales to millions of users:
 
-The channel stub is separate over HTTP, but still local. At scale, it would be independently deployed and queue-backed.
+### 1. Data Layer & Persistence
+* **Prototype**: In-memory JavaScript structures persisted to local JSON files (`data/crm-state.json`, `data/whatsapp-config.json`).
+* **Production Scale**: 
+  - **shopper & Order Data**: PostgreSQL or MongoDB with read-replicas for fast segment querying.
+  - **Receipt Events Stream**: Partitioned event stores like **Apache Kafka** or **AWS Kinesis** to handle high-throughput callback receipt logging.
 
-The AI planner works without an API key using a deterministic offline engine. If `OPENAI_API_KEY` is present, the app first tries an OpenAI-compatible chat completion call for richer campaign strategy and falls back safely to the offline engine if the request fails.
+### 2. Message Dispatch & Queue Management
+* **Prototype**: Synchronous REST calls (`/send`) triggering simulated event loops via `setTimeout` queues.
+* **Production Scale**: 
+  - Campaign dispatches are pushed to a distributed job queue system (like **BullMQ** on Redis or **Celery**). 
+  - Workers pull segments, perform template rendering, and throttled-dispatch outbound messages to prevent hitting provider rate-limits.
+
+### 3. Idempotency & Callback Verification
+* **Prototype**: Simple in-memory tracking via Javascript `Set`.
+* **Production Scale**: 
+  - Unique idempotency keys mapped to event hashes in Redis (with TTL) to prevent duplicate processing of redundant webhooks.
+  - **Webhook signature validation**: Meta/Twilio request verification keys validated using SHA256 HMAC headers to ensure webhook origin authenticity.
+
+### 4. AI Strategy Planner
+* **Prototype**: Deterministic local fallback generator with optional OpenAI chat-completion API connection.
+* **Production Scale**: Integrated with LLM routers (like LangChain/LlamaIndex) querying vector databases (RAG) containing historical brand campaign performance data for highly optimized targeting.
 
 Optional AI environment variables:
 
