@@ -56,31 +56,17 @@ This is intentionally not a sales CRM. There are no pipelines, deals, tickets, o
 
 ## Architecture
 
-```text
-Browser UI
-   |
-   | fetch
-   v
-CRM Service :3000
-   |-- customers, orders, segments, campaigns
-   |-- POST /api/campaigns/:id/send
-   |-- POST /api/receipts
-   |-- persists state to data/crm-state.json
-   |
-   | HTTP send request
-   v
-Channel Stub Service :3001
-   |-- simulates delivered, failed, opened, read, clicked
-   |-- simulates duplicate and out-of-order receipts
-   |-- retries failed callbacks
-   |
-   | async callback
-   v
-CRM Receipt API
-   |
-   v
-Campaign metrics dashboard
-```
+![Xeno CRM System Architecture Diagram](public/xeno_architecture_diagram.png)
+
+The application consists of a two-service, callback-driven event loop that closely mirrors production channel messaging architectures:
+
+1. **Browser UI**: A premium, glassmorphic CRM command center that communicates with the CRM service via REST APIs.
+2. **CRM Service (`port 3000`)**: Manages ingestion, behavior-based segmentation, campaign creation, and recomputes analytics on callback.
+3. **Channel Stub Service (`port 3001`)**: Simulates messaging behaviors and asynchronously callbacks to the CRM to update states in real-time. Includes a visual developer console dashboard showing real-time logs, webhook simulators, and manual override event triggers.
+
+## Performance Dashboard Mockup
+
+![Campaign Performance Metrics Dashboard](public/xeno_metrics_dashboard.png)
 
 ## APIs
 
