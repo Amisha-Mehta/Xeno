@@ -444,6 +444,53 @@
               </div>
             </div>
 
+            <div class="panel" style="margin-bottom: 28px;">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <h3>Create Campaign From Existing Segment</h3>
+                  <p>Use the customer segment you already created and launch a WhatsApp campaign directly.</p>
+                </div>
+                <span class="status-pill success">Manual Send Flow</span>
+              </div>
+              <form id="manualCampaignForm" onsubmit="event.preventDefault();" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+                <label style="font-size: 12px; font-weight: 600; color: var(--ink-soft);">Campaign Name
+                  <input type="text" id="manualCampaignName" placeholder="e.g. Delhi WhatsApp Winback" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas); color: var(--ink); margin-top: 4px; box-sizing: border-box;">
+                </label>
+                <label style="font-size: 12px; font-weight: 600; color: var(--ink-soft);">Target Audience
+                  <select id="manualAudienceType" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas); color: var(--ink); margin-top: 4px; box-sizing: border-box;">
+                    <option value="">Select audience</option>
+                    <option value="existing_segment">Existing Segment</option>
+                    <option value="gold_members">Gold Members</option>
+                    <option value="silver_members">Silver Members</option>
+                    <option value="bronze_members">Bronze Members</option>
+                    <option value="vip_members">VIP Members</option>
+                  </select>
+                </label>
+                <label style="font-size: 12px; font-weight: 600; color: var(--ink-soft);">Target Segment
+                  <select id="manualSegmentId" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas); color: var(--ink); margin-top: 4px; box-sizing: border-box;"></select>
+                </label>
+                <label style="font-size: 12px; font-weight: 600; color: var(--ink-soft);">Channel
+                  <select id="manualCampaignChannel" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas); color: var(--ink); margin-top: 4px; box-sizing: border-box;">
+                    <option value="">Select channel</option>
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="sms">SMS</option>
+                    <option value="email">Email</option>
+                    <option value="rcs">RCS</option>
+                  </select>
+                </label>
+                <label style="font-size: 12px; font-weight: 600; color: var(--ink-soft);">Subject / Label
+                  <input type="text" id="manualCampaignSubject" placeholder="e.g. Weekend offer for VIP shoppers" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas); color: var(--ink); margin-top: 4px; box-sizing: border-box;">
+                </label>
+                <label style="grid-column: 1 / -1; font-size: 12px; font-weight: 600; color: var(--ink-soft);">Message
+                  <textarea id="manualCampaignMessage" rows="5" placeholder="Hi {{first_name}}, your new offer is ready on WhatsApp." style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas); color: var(--ink); margin-top: 4px; box-sizing: border-box; resize: vertical;"></textarea>
+                </label>
+                <div style="grid-column: 1 / -1; display: flex; gap: 10px; justify-content: flex-end;">
+                  <button type="button" class="btn btn-secondary" id="manualCreateCampaignBtn">Save Manual Campaign</button>
+                  <button type="button" class="btn btn-primary" id="manualCreateAndSendBtn">Save and Send Now</button>
+                </div>
+              </form>
+            </div>
+
             <!-- Campaign list container -->
             <div class="panel">
               <div class="panel-header">
@@ -605,6 +652,16 @@
                       <label style="font-size: 12px; font-weight: 600; color: var(--ink-soft)">Meta Permanent / System User Access Token
                         <input type="password" id="waMetaAccessToken" placeholder="EAABw..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas); color: var(--ink); margin-top: 4px;">
                       </label>
+                      <label style="font-size: 12px; font-weight: 600; color: var(--ink-soft)">Approved Template Name
+                        <input type="text" id="waMetaTemplateName" placeholder="e.g. hello_world or your approved marketing template" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas); color: var(--ink); margin-top: 4px;">
+                      </label>
+                      <label style="font-size: 12px; font-weight: 600; color: var(--ink-soft)">Template Language Code
+                        <input type="text" id="waMetaTemplateLanguage" placeholder="e.g. en_US" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas); color: var(--ink); margin-top: 4px;">
+                      </label>
+                      <label style="font-size: 12px; font-weight: 600; color: var(--ink-soft); display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="waMetaUseTemplateForCampaigns">
+                        Use approved template for WhatsApp campaigns
+                      </label>
                     </div>
 
                     <!-- Twilio Fields -->
@@ -712,13 +769,27 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
               <label style="font-size: 12px; font-weight: 600; color: var(--ink-soft); display: block;">Loyalty Tier
                 <select id="custTier" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas); color: var(--ink); margin-top: 4px; box-sizing: border-box;">
+                  <option value="">Select tier</option>
                   <option value="bronze">Bronze</option>
                   <option value="silver">Silver</option>
                   <option value="gold">Gold</option>
                 </select>
               </label>
+              <label style="font-size: 12px; font-weight: 600; color: var(--ink-soft); display: block;">Member Type
+                <select id="custLifecycle" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas); color: var(--ink); margin-top: 4px; box-sizing: border-box;">
+                  <option value="">Select member type</option>
+                  <option value="new">New</option>
+                  <option value="active">Active</option>
+                  <option value="vip">VIP</option>
+                  <option value="high_value">High Value</option>
+                  <option value="lapsed">Lapsed</option>
+                </select>
+              </label>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
               <label style="font-size: 12px; font-weight: 600; color: var(--ink-soft); display: block;">Preferred Channel
                 <select id="custChannel" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--canvas); color: var(--ink); margin-top: 4px; box-sizing: border-box;">
+                  <option value="">Select channel</option>
                   <option value="whatsapp">WhatsApp</option>
                   <option value="sms">SMS</option>
                   <option value="email">Email</option>
@@ -752,12 +823,19 @@
             <div style="background: var(--canvas); border: 1px solid var(--border); padding: 12px; border-radius: 6px; display: flex; flex-direction: column; gap: 10px;">
               <div style="display: grid; grid-template-columns: 1.2fr 1fr 1.2fr; gap: 8px; align-items: center;">
                 <select id="ruleField" style="padding: 6px; font-size: 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--panel); color: var(--ink); box-sizing: border-box;">
+                  <option value="">Select field</option>
                   <option value="loyaltyTier">Loyalty Tier</option>
                   <option value="city">City</option>
                   <option value="preferredChannel">Preferred Channel</option>
                 </select>
                 <span style="font-size: 11px; text-align: center; color: var(--muted); font-weight: 600;">EQUALS</span>
                 <input type="text" id="ruleValue" required placeholder="e.g. Delhi" style="padding: 6px; font-size: 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--panel); color: var(--ink); box-sizing: border-box;">
+                <select id="ruleValueSelect" class="hidden" style="padding: 6px; font-size: 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--panel); color: var(--ink); box-sizing: border-box;">
+                  <option value="">Select value</option>
+                  <option value="gold">Gold</option>
+                  <option value="silver">Silver</option>
+                  <option value="bronze">Bronze</option>
+                </select>
               </div>
             </div>
           </div>

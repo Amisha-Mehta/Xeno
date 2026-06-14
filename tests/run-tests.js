@@ -228,7 +228,7 @@ async function testCustomerPortalDataIsolation() {
 
 async function testWhatsAppFallbackWhenNotConfigured() {
   const { createChannelApp } = require('../lib/channel-app');
-  const channelApp = createChannelApp();
+  const channelApp = createChannelApp({ forceSimulation: true });
   const channelServer = channelApp.server.listen(0);
   const port = channelServer.address().port;
 

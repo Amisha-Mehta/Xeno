@@ -3,6 +3,7 @@ let latestDraft = null;
 let latestCampaignId = null;
 let isDrafting = false;
 let isChatting = false;
+let aiStatus = { configured: false, mode: 'offline' };
 
 const money = new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -269,6 +270,43 @@ function renderCampaigns() {
   }
   el('campaignList').innerHTML = campaigns.map((campaign) => renderCampaignCard(campaign)).join('');
   toggleEmpty('campaignsEmpty', campaigns);
+}
+
+function populateManualCampaignSegments() {
+  const select = el('manualSegmentId');
+  if (!select || !appState) return;
+
+  const segments = appState.segments || [];
+  const current = select.value;
+  select.innerHTML = segments.length
+    ? ['<option value="">Select segment</option>']
+      .concat(segments.map((segment) => `<option value="${safe(segment.id)}">${safe(segment.name)} (${segment.estimatedCount} shoppers)</option>`))
+      .join('')
+    : '<option value="">No segments available</option>';
+
+  if (segments.some((segment) => segment.id === current)) {
+    select.value = current;
+  } else {
+    select.value = '';
+  }
+}
+
+function setupManualAudienceSelector() {
+  const audienceSelect = el('manualAudienceType');
+  const segmentSelect = el('manualSegmentId');
+  if (!audienceSelect || !segmentSelect) return;
+
+  function syncAudienceMode() {
+    const useSegment = audienceSelect.value === 'existing_segment';
+    segmentSelect.disabled = !useSegment;
+    segmentSelect.style.opacity = useSegment ? '1' : '0.6';
+    if (!useSegment) {
+      segmentSelect.value = '';
+    }
+  }
+
+  audienceSelect.addEventListener('change', syncAudienceMode);
+  syncAudienceMode();
 }
 
 function renderSegments() {
@@ -572,6 +610,26 @@ function appendChatMessage(text, role) {
   container.scrollTop = container.scrollHeight;
 }
 
+function setChatModeBadge(mode) {
+  const badge = el('chatModeBadge');
+  if (!badge) return;
+
+  if (mode === 'llm') {
+    badge.textContent = 'LLM Live';
+    badge.className = 'status-pill success';
+    return;
+  }
+
+  if (mode === 'error') {
+    badge.textContent = 'AI Unavailable';
+    badge.className = 'status-pill warning';
+    return;
+  }
+
+  badge.textContent = 'Offline Mode';
+  badge.className = 'status-pill primary';
+}
+
 async function sendChat() {
   const input = el('chatInput');
   const message = input.value.trim();
@@ -585,8 +643,7 @@ async function sendChat() {
   try {
     const result = await api('/api/ai/chat', { method: 'POST', body: { message } });
     appendChatMessage(result.reply, 'assistant');
-    el('chatModeBadge').textContent = result.mode === 'llm' ? 'LLM Live' : 'Offline Mode';
-    el('chatModeBadge').className = result.mode === 'llm' ? 'status-pill success' : 'status-pill primary';
+    setChatModeBadge(result.mode);
   } catch (err) {
     appendChatMessage('Sorry, something went wrong. Try again.', 'assistant');
     toast('Chat failed: ' + err.message, 'error');
@@ -595,6 +652,30 @@ async function sendChat() {
     el('chatSendBtn').disabled = false;
     input.focus();
   }
+}
+
+function syncAiBadges() {
+  const plannerBadge = el('aiModeBadge');
+  const chatBadge = el('chatModeBadge');
+  const isLive = aiStatus.mode === 'llm';
+
+  if (plannerBadge && !latestDraft) {
+    plannerBadge.textContent = isLive ? 'LLM Ready' : 'Offline Mode';
+    plannerBadge.className = isLive ? 'status-pill success' : 'status-pill primary';
+  }
+
+  if (chatBadge) {
+    setChatModeBadge(isLive ? 'llm' : 'offline');
+  }
+}
+
+async function loadAiStatus() {
+  try {
+    aiStatus = await api('/api/ai/status');
+  } catch {
+    aiStatus = { configured: false, mode: 'offline' };
+  }
+  syncAiBadges();
 }
 
 async function refresh() {
@@ -607,6 +688,7 @@ async function refresh() {
     renderCustomers();
     renderReceipts();
     renderDashboardCharts();
+    populateManualCampaignSegments();
     bindDynamicButtons();
   } catch (err) {
     toast('Refresh failed: ' + err.message, 'error');
@@ -671,6 +753,81 @@ async function createCampaign() {
     return latestCampaignId;
   } catch (err) {
     toast('Failed to create campaign: ' + err.message, 'error');
+    return null;
+  }
+}
+
+async function createManualCampaign({ sendNow = false } = {}) {
+  const audienceType = el('manualAudienceType').value;
+  const segmentId = el('manualSegmentId').value;
+  const name = el('manualCampaignName').value.trim();
+  const channel = el('manualCampaignChannel').value;
+  const subject = el('manualCampaignSubject').value.trim();
+  const message = el('manualCampaignMessage').value.trim();
+
+  if (!audienceType) {
+    toast('Select a target audience first', 'warn');
+    return null;
+  }
+  if (audienceType === 'existing_segment' && !segmentId) {
+    toast('Select a segment first', 'warn');
+    return null;
+  }
+  if (!channel) {
+    toast('Select a channel first', 'warn');
+    return null;
+  }
+  if (!name || !message) {
+    toast('Campaign name and message are required', 'warn');
+    return null;
+  }
+
+  const recipientIds = audienceType === 'existing_segment'
+    ? null
+    : (appState.customers || [])
+      .filter((customer) => {
+        if (audienceType === 'gold_members') return customer.attributes?.loyaltyTier === 'gold';
+        if (audienceType === 'silver_members') return customer.attributes?.loyaltyTier === 'silver';
+        if (audienceType === 'bronze_members') return customer.attributes?.loyaltyTier === 'bronze';
+        if (audienceType === 'vip_members') {
+          return customer.lifecycle === 'vip' || (customer.segmentTags || []).includes('VIP');
+        }
+        return false;
+      })
+      .map((customer) => customer.id);
+
+  if (audienceType !== 'existing_segment' && (!recipientIds || !recipientIds.length)) {
+    toast('No matching customers found for that audience', 'warn');
+    return null;
+  }
+
+  try {
+    const campaignResponse = await api('/api/campaigns', {
+      method: 'POST',
+      body: {
+        name,
+        segmentId: audienceType === 'existing_segment' ? segmentId : null,
+        recipientIds,
+        channel,
+        subject: subject || name,
+        message,
+        offer: '',
+        aiSummary: audienceType === 'existing_segment'
+          ? 'Manual campaign created from an existing segment.'
+          : `Manual campaign created for ${audienceType.replaceAll('_', ' ')}.`
+      }
+    });
+    latestCampaignId = campaignResponse.campaign.id;
+    toast(sendNow ? 'Campaign saved. Sending now...' : 'Manual campaign saved as draft', 'success');
+    await refresh();
+
+    if (sendNow) {
+      await sendCampaign(latestCampaignId);
+    }
+
+    return latestCampaignId;
+  } catch (err) {
+    toast('Failed to create manual campaign: ' + err.message, 'error');
     return null;
   }
 }
@@ -790,6 +947,63 @@ function closeModals() {
   el('addSegmentModal').classList.add('hidden');
 }
 
+function getSegmentRuleValue() {
+  const field = el('ruleField')?.value;
+  if (!field) return '';
+  if (field === 'loyaltyTier' || field === 'preferredChannel') {
+    return el('ruleValueSelect').value;
+  }
+  return el('ruleValue').value.trim();
+}
+
+function setupSegmentRuleField() {
+  const fieldSelect = el('ruleField');
+  const textInput = el('ruleValue');
+  const selectInput = el('ruleValueSelect');
+  if (!fieldSelect || !textInput || !selectInput) return;
+
+  const optionSets = {
+    loyaltyTier: [
+      { value: 'gold', label: 'Gold' },
+      { value: 'silver', label: 'Silver' },
+      { value: 'bronze', label: 'Bronze' }
+    ],
+    preferredChannel: [
+      { value: 'whatsapp', label: 'WhatsApp' },
+      { value: 'sms', label: 'SMS' },
+      { value: 'email', label: 'Email' },
+      { value: 'rcs', label: 'RCS' }
+    ]
+  };
+
+  function applyFieldMode() {
+    const field = fieldSelect.value;
+    const options = optionSets[field];
+
+    if (options) {
+      selectInput.innerHTML = ['<option value="">Select value</option>']
+        .concat(options.map((option) => `<option value="${safe(option.value)}">${safe(option.label)}</option>`))
+        .join('');
+      textInput.classList.add('hidden');
+      textInput.required = false;
+      selectInput.classList.remove('hidden');
+      selectInput.required = true;
+      selectInput.value = '';
+      return;
+    }
+
+    selectInput.classList.add('hidden');
+    selectInput.required = false;
+    textInput.classList.remove('hidden');
+    textInput.required = !!field;
+    textInput.placeholder = field === 'city' ? 'e.g. Delhi' : field ? 'Enter value' : 'Choose a field first';
+    textInput.value = '';
+  }
+
+  fieldSelect.addEventListener('change', applyFieldMode);
+  applyFieldMode();
+}
+
 // Ingest Customer
 async function handleAddCustomerSubmit() {
   const name = el('custName').value;
@@ -797,12 +1011,22 @@ async function handleAddCustomerSubmit() {
   const phone = el('custPhone').value;
   const city = el('custCity').value;
   const loyaltyTier = el('custTier').value;
+  const lifecycle = el('custLifecycle').value;
   const preferredChannel = el('custChannel').value;
+  if (!loyaltyTier || !lifecycle || !preferredChannel) {
+    toast('Select loyalty tier, member type, and preferred channel', 'warn');
+    return;
+  }
+  const segmentTags = lifecycle === 'vip'
+    ? ['VIP', 'Admin Created']
+    : lifecycle === 'high_value'
+      ? ['High Value', 'Admin Created']
+      : [lifecycle.replaceAll('_', ' '), 'Admin Created'];
 
   try {
     await api('/api/customers', {
       method: 'POST',
-      body: { name, email, phone, city, preferredChannel, attributes: { loyaltyTier } }
+      body: { name, email, phone, city, preferredChannel, lifecycle, segmentTags, attributes: { loyaltyTier } }
     });
     toast('Customer ingested successfully!', 'success');
     closeModals();
@@ -818,11 +1042,16 @@ async function handleAddSegmentSubmit() {
   const name = el('segName').value;
   const description = el('segDesc').value;
   const field = el('ruleField').value;
-  const val = el('ruleValue').value;
+  const val = getSegmentRuleValue();
+
+  if (!field || !val) {
+    toast('Select both a rule field and a value', 'warn');
+    return;
+  }
 
   const rules = {
     kind: 'custom',
-    optInOnly: false,
+    optInOnly: true,
     [field]: val
   };
 
@@ -835,6 +1064,7 @@ async function handleAddSegmentSubmit() {
     closeModals();
     el('addSegmentForm').reset();
     await refresh();
+    populateManualCampaignSegments();
   } catch (err) {
     toast('Failed to create segment: ' + err.message, 'error');
   }
@@ -946,6 +1176,9 @@ async function loadWhatsAppConfig() {
     
     el('waMetaPhoneId').value = config.metaPhoneId || '';
     el('waMetaAccessToken').value = config.metaAccessToken || '';
+    el('waMetaTemplateName').value = config.metaTemplateName || '';
+    el('waMetaTemplateLanguage').value = config.metaTemplateLanguage || 'en_US';
+    el('waMetaUseTemplateForCampaigns').checked = !!config.metaUseTemplateForCampaigns;
     
     el('waTwilioSid').value = config.twilioAccountSid || '';
     el('waTwilioToken').value = config.twilioAuthToken || '';
@@ -984,6 +1217,9 @@ async function saveWhatsAppConfig() {
   const provider = el('waProvider').value;
   const metaPhoneId = el('waMetaPhoneId').value;
   const metaAccessToken = el('waMetaAccessToken').value;
+  const metaTemplateName = el('waMetaTemplateName').value;
+  const metaTemplateLanguage = el('waMetaTemplateLanguage').value;
+  const metaUseTemplateForCampaigns = el('waMetaUseTemplateForCampaigns').checked;
   const twilioAccountSid = el('waTwilioSid').value;
   const twilioAuthToken = el('waTwilioToken').value;
   const twilioWhatsappFrom = el('waTwilioFrom').value;
@@ -995,6 +1231,9 @@ async function saveWhatsAppConfig() {
         provider,
         metaPhoneId,
         metaAccessToken,
+        metaTemplateName,
+        metaTemplateLanguage,
+        metaUseTemplateForCampaigns,
         twilioAccountSid,
         twilioAuthToken,
         twilioWhatsappFrom
@@ -1042,6 +1281,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   el('createCampaignBtn').addEventListener('click', createCampaign);
   el('scheduleCampaignBtn').addEventListener('click', () => scheduleCampaign());
   el('sendLatestBtn').addEventListener('click', () => sendCampaign());
+  el('manualCreateCampaignBtn')?.addEventListener('click', () => createManualCampaign());
+  el('manualCreateAndSendBtn')?.addEventListener('click', () => createManualCampaign({ sendNow: true }));
   
   // Modal trigger actions
   el('addCustomerBtn')?.addEventListener('click', () => openModal('addCustomerModal'));
@@ -1056,14 +1297,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   el('addCustomerForm').addEventListener('submit', handleAddCustomerSubmit);
   el('addSegmentForm').addEventListener('submit', handleAddSegmentSubmit);
+  setupSegmentRuleField();
 
   // Additional Topbar logic
   setupWorkspaceSelector();
   setupGlobalSearch();
+  setupManualAudienceSelector();
 
   // Settings screen configs
   setupWhatsAppConfigListeners();
   await loadWhatsAppConfig();
+  await loadAiStatus();
 
   el('resetDemoBtn')?.addEventListener('click', resetDemoData);
   el('chatSendBtn').addEventListener('click', sendChat);
