@@ -12,7 +12,7 @@ const CHANNEL_PORT = process.env.CHANNEL_PORT || 3001;
 const channel = createChannelApp();
 const crm = createCrmApp({
   crmUrl: process.env.CRM_URL || `http://localhost:${PORT}`,
-  channelUrl: process.env.CHANNEL_URL || `http://localhost:${CHANNEL_PORT}`
+  channelApp: channel
 });
 
 channel.server.listen(CHANNEL_PORT, () => {
