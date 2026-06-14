@@ -19,6 +19,19 @@ If you are evaluating the codebase's technical rigor, here are direct links to t
 
 ---
 
+## 🔑 Default Login Credentials
+To quickly test the UI, use these default credentials included in the local JSON database:
+
+**Admin Dashboard (`http://localhost:3000`)**
+- **Email:** `admin@xeno.io`
+- **Password:** `admin123`
+
+**Customer Portal (`http://localhost:3000/customer-login.html`)**
+- **Email:** `aanya@loomandlane.com`
+- **Phone:** `+91 90000 10001`
+
+---
+
 ## 🚀 Hero & Platform Overview
 
 Xeno Mini CRM is a high-performance, AI-native shopper engagement console designed to help consumer brands intelligently target, engage, and convert shoppers. By integrating semantic campaign planning with callback-driven lifecycle tracking, Xeno acts as an automated command desk for Direct-to-Consumer (D2C) marketing.
