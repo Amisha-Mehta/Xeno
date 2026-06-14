@@ -595,6 +595,88 @@ function renderNoDraft() {
   updateMobilePreview('whatsapp', 'Select a campaign draft to view the render message here.');
 }
 
+function formatCampaignDraft(text) {
+  // Extract title: e.g. **Campaign Draft: Mumbai Locals Special**
+  const titleMatch = text.match(/(?:\*\*Campaign Draft:\s*([^*]+)\*\*|Campaign Draft:\s*([^\n*]+))/i);
+  const title = (titleMatch ? (titleMatch[1] || titleMatch[2]) : 'Campaign Draft').trim();
+  
+  // Extract Audience:
+  const audienceMatch = text.match(/(?:\*\*Audience:\*\*|\* Audience:)\s*([^\n*]+)/i);
+  const audience = audienceMatch ? audienceMatch[1].trim() : '';
+  
+  // Extract Channel:
+  const channelMatch = text.match(/(?:\*\*Channel:\*\*|\* Channel:)\s*([^\n*]+)/i);
+  const channel = channelMatch ? channelMatch[1].trim() : '';
+  
+  // Extract Offer:
+  const offerMatch = text.match(/(?:\*\*Offer:\*\*|\* Offer:)\s*([^\n*]+)/i);
+  const offer = offerMatch ? offerMatch[1].trim() : '';
+  
+  // Extract Message:
+  const messageMatch = text.match(/(?:\*\*Message:\*\*|\* Message:)\s*["']?([\s\S]+?)["']?$/i) 
+    || text.match(/(?:\*\*Message:\*\*|\* Message:)\s*([\s\S]+)$/i);
+  let message = messageMatch ? messageMatch[1].trim() : '';
+  if (message.startsWith('"') && message.endsWith('"')) {
+    message = message.slice(1, -1);
+  }
+  
+  return `
+    <div class="chat-draft-card">
+      <div class="chat-draft-header">
+        <span class="chat-draft-badge">AI Proposed Draft</span>
+        <h4 class="chat-draft-title">${safe(title)}</h4>
+      </div>
+      <div class="chat-draft-details">
+        <div class="chat-draft-field">
+          <span class="field-label">Audience</span>
+          <span class="field-value">${safe(audience).replace(/`([^`]+)`/g, '<code>$1</code>')}</span>
+        </div>
+        <div class="chat-draft-field">
+          <span class="field-label">Channel</span>
+          <span class="field-value"><span class="badge-channel-pill">${safe(channel)}</span></span>
+        </div>
+        <div class="chat-draft-field">
+          <span class="field-label">Offer</span>
+          <span class="field-value">${safe(offer)}</span>
+        </div>
+      </div>
+      <div class="chat-draft-message-box">
+        <div class="message-box-header">Proposed Message Body</div>
+        <div class="message-box-body">${safe(message).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\[(Link|Shop now)\]/gi, '<a href="#" class="chat-link">$1</a>')}</div>
+      </div>
+    </div>
+  `;
+}
+
+function formatMarkdown(text) {
+  if (!text) return '';
+  
+  if (text.toLowerCase().includes('campaign draft:')) {
+    try {
+      return formatCampaignDraft(text);
+    } catch (e) {
+      console.error('Failed to parse campaign draft specially, falling back to markdown:', e);
+    }
+  }
+  
+  let html = safe(text);
+  
+  // Bold **text**
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  
+  // Inline code `code`
+  html = html.replace(/`(.*?)`/g, '<code>$1</code>');
+  
+  // Bullet points
+  html = html.replace(/(?:^|\n)\s*[\*\-]\s+(.+)/g, '<li class="chat-bullet-item">$1</li>');
+  html = html.replace(/(<li class="chat-bullet-item">.*?<\/li>)+/gs, '<ul class="chat-list">$1</ul>');
+  
+  // Newlines to breaks
+  html = html.replace(/\n/g, '<br>');
+  
+  return html;
+}
+
 function appendChatMessage(text, role) {
   const container = el('chatMessages');
   const div = document.createElement('div');
@@ -604,7 +686,7 @@ function appendChatMessage(text, role) {
   
   div.innerHTML = `
     <div class="chat-avatar">${avatar}</div>
-    <div class="chat-bubble">${safe(text)}</div>
+    <div class="chat-bubble">${role === 'user' ? safe(text) : formatMarkdown(text)}</div>
   `;
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;

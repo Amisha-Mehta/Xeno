@@ -998,7 +998,8 @@ tbody tr:hover {
 .chat-panel {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  height: calc(100vh - 170px);
+  height: calc(100vh - 240px);
+  min-height: 480px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--panel);
@@ -1050,6 +1051,7 @@ tbody tr:hover {
 
 .chat-msg.assistant {
   align-self: flex-start;
+  width: 100%;
 }
 
 .chat-avatar {
@@ -1079,6 +1081,7 @@ tbody tr:hover {
   font-size: 13px;
   line-height: 1.5;
   box-shadow: var(--shadow-sm);
+  max-width: calc(100% - 44px);
 }
 
 .chat-msg.user .chat-bubble {
@@ -1092,6 +1095,7 @@ tbody tr:hover {
   color: var(--ink);
   border-top-left-radius: 0;
   border: 1px solid var(--border);
+  width: 100%;
 }
 
 .chat-input-bar {
@@ -1113,6 +1117,124 @@ tbody tr:hover {
 
 .chat-input-bar input:focus {
   border-color: var(--primary);
+}
+
+/* Chat Proposed Campaign Draft Card Styling */
+.chat-draft-card {
+  background: var(--canvas);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+}
+
+.chat-draft-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chat-draft-badge {
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 2px 6px;
+  border-radius: 4px;
+  align-self: flex-start;
+  letter-spacing: 0.05em;
+}
+
+.chat-draft-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.chat-draft-details {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+
+.chat-draft-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.chat-draft-field .field-label {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.chat-draft-field .field-value {
+  font-weight: 500;
+  color: var(--ink-soft);
+  text-align: right;
+}
+
+.badge-channel-pill {
+  background: var(--info-light);
+  color: var(--info-text);
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+
+.chat-draft-message-box {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.message-box-header {
+  background: var(--canvas);
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.message-box-body {
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  white-space: pre-wrap;
+}
+
+.chat-link {
+  color: var(--primary);
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.chat-list {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+.chat-bullet-item {
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: var(--ink-soft);
 }
 
 /* Suggestions Sidebar on Copilot Chat */
