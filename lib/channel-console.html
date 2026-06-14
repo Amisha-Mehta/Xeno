@@ -725,7 +725,7 @@
 
     async function fetchConfig() {
       try {
-        const response = await fetch('/health');
+        const response = await fetch('health');
         if (!response.ok) throw new Error('Status error');
         const data = await response.json();
         
@@ -749,7 +749,7 @@
       setTimeout(() => { if (svg) svg.style.transform = ''; }, 300);
 
       try {
-        const response = await fetch('/api/logs');
+        const response = await fetch('api/logs');
         if (!response.ok) throw new Error('Logs API unavailable');
         const data = await response.json();
         activeLogs = data.logs || [];
@@ -828,7 +828,7 @@
       if (!log) return;
 
       try {
-        const response = await fetch('/api/simulate-callback', {
+        const response = await fetch('api/simulate-callback', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -860,7 +860,7 @@
       }
 
       try {
-        const response = await fetch('/webhooks/whatsapp', {
+        const response = await fetch('webhooks/whatsapp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
